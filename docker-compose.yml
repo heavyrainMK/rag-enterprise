@@ -1,0 +1,50 @@
+# =============================================================
+# docker-compose.yml - RAG Enterprise
+#
+# Service unique :
+#   api → FastAPI : sert l'API RAG ET le frontend React statique
+#         sur le port 8000.
+#
+# Ollama tourne sur l'hôte (service systemd), pas dans Docker.
+#
+# Lancement :
+#   docker-compose up --build
+#
+# Ingestion initiale :
+#   docker-compose run --rm api python -m src.core.ingest
+# =============================================================
+
+services:
+
+  # -----------------------------------------------------------
+  # API FastAPI (+ frontend React servi en statique)
+  # -----------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag_api
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./vectorstore:/app/vectorstore
+      - ./rag_history.db:/app/rag_history.db
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral}
+      - USE_OPENAI=${USE_OPENAI:-false}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      # host.docker.internal pointe vers la machine hôte depuis un conteneur
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      # Nécessaire sur Linux (automatique sur Mac/Windows)
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 30s

@@ -1,0 +1,45 @@
+# ##############################################################
+# Projet ...... : RAG Enterprise (backend FastAPI)
+# Auteur ...... : Maxim Khomenko
+# ##############################################################
+
+# --- LangChain ---
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-core==0.2.43
+langchain-openai==0.1.25
+langchain-huggingface==0.0.3
+langchain-chroma==0.1.4
+langsmith==0.1.147
+
+# --- Embeddings & vecteurs ---
+pypdf==4.3.1
+sentence-transformers==3.0.1
+torch==2.4.0
+chromadb==0.5.23
+posthog>=2.4.0,<3.0
+
+# --- API FastAPI ---
+fastapi>=0.115.3,<0.116
+uvicorn[standard]>=0.25.0
+pydantic==2.8.2
+python-multipart>=0.0.9
+
+# --- Base de données ---
+sqlalchemy>=2.0,<2.1
+
+# --- LLM ---
+ollama==0.3.1
+openai==1.109.1
+
+# --- Utilitaires ---
+python-dotenv==1.0.1
+httpx==0.27.0
+
+# --- Authentification ---
+python-jose[cryptography]==3.3.0
+bcrypt>=4.0.1,<6.0
+
+# --- Tests ---
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

@@ -1,0 +1,37 @@
+# Environnement virtuel Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Secrets (le .env réel ne doit jamais être dans l'image)
+.env
+
+# Vectorstore (monté via volume)
+vectorstore/
+
+# Données brutes (montées via volume)
+data/
+
+# Base de données locale
+rag_history.db
+
+# Cache des modèles HuggingFace (trop lourd pour l'image)
+.cache/
+
+# Frontend : dépendances et build locaux
+# (réinstallés / reconstruits dans l'étape Node du Dockerfile)
+frontend/node_modules/
+frontend/dist/
+
+# Tests
+.pytest_cache/
+
+# Fichiers de dev
+.git/
+.gitignore
+*.md
+*.lock
+requirements.lock

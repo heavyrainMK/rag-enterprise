@@ -1,0 +1,383 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ##############################################################
+# Nom ......... : index.css
+# Rôle ........ : Thème "Aurora / Glassmorphism Sombre" pour le
+#                 frontend React (Vite) de RAG Enterprise.
+#                 Reprend l'identité visuelle de l'ancien
+#                 custom.css Chainlit (palette, Aurora, verre
+#                 dépoli, glow) sous forme de classes utilitaires
+#                 réutilisables, sans aucun sélecteur Chainlit.
+# Auteur ...... : Maxim Khomenko
+# Version ..... : V2.1.0 du 23/06/2026
+# Licence ..... : Réalisé dans le cadre d'un projet de fin de
+#                 licence en Informatique (L3)
+# Usage ....... : Importé par src/main.tsx (import "./index.css").
+# Dépendances . : Tailwind CSS, police Inter (Google Fonts).
+############################################################## */
+
+/* ---------------------------------------------------------------------------
+# Variables globales
+# --------------------------------------------------------------------------- */
+:root {
+  --brand-primary: #8b5cf6;
+  --brand-accent:  #06b6d4;
+  --brand-dark:    #09090b;
+  --glass-bg:      rgba(24, 24, 27, 0.45);
+  --glass-border:  rgba(255, 255, 255, 0.08);
+  --glass-blur:    blur(16px);
+
+  --texte-clair:   #e2e8f0;
+  --texte-blanc:   #ffffff;
+  --texte-doux:    #f1f5f9;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--brand-dark);
+  color: var(--texte-clair);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+# Fond Aurora animé (deux orbes floutées)
+# --------------------------------------------------------------------------- */
+.aurora-orb {
+  position: fixed;
+  width: 60vw; height: 60vh;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0; opacity: 0.35;
+  pointer-events: none;
+}
+.aurora-orb--violet {
+  background: radial-gradient(circle, var(--brand-primary), transparent 60%);
+  top: -10%; left: -10%;
+  animation: aurora 15s alternate infinite ease-in-out;
+}
+.aurora-orb--cyan {
+  background: radial-gradient(circle, var(--brand-accent), transparent 60%);
+  bottom: -10%; right: -10%;
+  animation: aurora 15s alternate infinite ease-in-out;
+  animation-delay: -7.5s;
+}
+@keyframes aurora {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5%, 5%) scale(1.15); }
+}
+
+/* ---------------------------------------------------------------------------
+# Verre dépoli (classe utilitaire pour les éléments en "glassmorphism")
+# --------------------------------------------------------------------------- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------------------
+# En-tête de l'application (barre supérieure)
+# --------------------------------------------------------------------------- */
+.app-header {
+  background: rgba(9, 9, 11, 0.6);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------------------
+# Zone de composition du message (input + bouton d'envoi)
+# --------------------------------------------------------------------------- */
+.composer {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+  cursor: text;
+}
+.composer:focus-within {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+}
+
+.bouton-envoi {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  border: none;
+  color: white;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s ease;
+}
+.bouton-envoi:hover:not(:disabled) {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
+}
+.bouton-envoi:disabled {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+# Navigation latérale
+# --------------------------------------------------------------------------- */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--texte-blanc);
+}
+.nav-item.actif {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--texte-blanc);
+}
+
+/* ---------------------------------------------------------------------------
+# Citations, code, blockquote (formatage Markdown éventuel des réponses)
+# --------------------------------------------------------------------------- */
+blockquote {
+  border-left: 3px solid var(--brand-accent);
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.08), transparent);
+  padding: 0.75rem 1rem;
+  border-radius: 0 12px 12px 0;
+  color: #a5b4fc;
+  font-style: italic;
+}
+
+code {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  color: #67e8f9;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.85em;
+}
+
+/* Titres et emphase (si tu rends du Markdown plus tard) */
+h1, h2, h3, h4, h5, h6 { color: var(--texte-blanc); }
+em, strong { color: var(--texte-doux); }
+
+/* ---------------------------------------------------------------------------
+# Badges de contexte (ex. "Partagé", "Privé") et de type de source
+# --------------------------------------------------------------------------- */
+.badge-scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+.badge-scope--shared { color: #67e8f9; }
+.badge-scope--private { color: #c4b5fd; }
+
+/* ---------------------------------------------------------------------------
+# Fenêtre modale (boîte de dialogue de connexion)
+# --------------------------------------------------------------------------- */
+.modale {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  color: var(--texte-clair);
+  border-radius: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+# Champs de saisie (écran de connexion, recherche…)
+# --------------------------------------------------------------------------- */
+.champ {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--texte-clair);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.champ:focus {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+.champ::placeholder { color: #64748b; }
+
+/* ---------------------------------------------------------------------------
+# Scrollbars personnalisées (zones scrollables comme la liste de messages)
+# --------------------------------------------------------------------------- */
+.scroll-zone::-webkit-scrollbar { width: 6px; }
+.scroll-zone::-webkit-scrollbar-track { background: transparent; }
+.scroll-zone::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.scroll-zone::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
+
+/* Scrollbar globale par défaut (cohérence sur toute la page) */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
+
+/* ===========================================================================
+# Effets néon / glow, badge d'état, avatar, badges fichiers
+# =========================================================================== */
+
+/* --- Bulles avec glow néon --- */
+.bulle-user-glow {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(139, 92, 246, 0.6);
+  border-radius: 18px;
+  padding: 14px 18px;
+  box-shadow:
+    0 0 18px rgba(139, 92, 246, 0.35),
+    inset 0 0 12px rgba(139, 92, 246, 0.08);
+}
+
+.bulle-assistant-glow {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(6, 182, 212, 0.55);
+  border-radius: 18px;
+  padding: 14px 18px;
+  box-shadow:
+    0 0 18px rgba(6, 182, 212, 0.30),
+    inset 0 0 12px rgba(6, 182, 212, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.bulle-assistant-glow:hover {
+  border-color: rgba(6, 182, 212, 0.8);
+  box-shadow:
+    0 0 26px rgba(6, 182, 212, 0.45),
+    inset 0 0 14px rgba(6, 182, 212, 0.10);
+}
+
+/* --- Avatar de l'assistant (pastille dégradée) --- */
+.avatar-ia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+  flex-shrink: 0;
+}
+
+/* --- Badge d'état système --- */
+.badge-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.point-etat {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.9);
+  animation: pulse-etat 2s infinite;
+}
+.point-etat--ko {
+  background: #f87171;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.9);
+}
+@keyframes pulse-etat {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+/* --- Avatar utilisateur --- */
+.pill-utilisateur {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--texte-clair);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+/* --- Badges de type de fichier [TXT] / [PDF] --- */
+.badge-fichier {
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid currentColor;
+}
+.badge-fichier--txt { color: #4ade80; }
+.badge-fichier--pdf { color: #f87171; }
+.badge-fichier--doc { color: #60a5fa; }
+
+/* --- Boutons d'action néon (Reposer / Voir plus) --- */
+.bouton-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--texte-clair);
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.bouton-action:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.9);
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.5);
+  transform: translateY(-1px);
+}
