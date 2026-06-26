@@ -30,7 +30,7 @@ from src.api.routes.auth_routes import router as routeur_auth
 from src.api.routes.stream import router as routeur_stream
 from src.api.routes.admin import router as routeur_admin
 from src.core.database import creer_base, get_db, sauvegarder_conversation
-from src.core.rag import repondre, charger_vectorstore
+from src.core.rag import repondre, charger_vectorstore, MODELE_OLLAMA
 
 logging.basicConfig(
     level=logging.INFO,
@@ -214,7 +214,7 @@ async def sante():
     try:
         vectorstore = charger_vectorstore()
         nombre = vectorstore._collection.count()
-        return ReponseSante(statut="ok", nb_documents=nombre)
+        return ReponseSante(statut="ok", nb_documents=nombre, modele=MODELE_OLLAMA)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 

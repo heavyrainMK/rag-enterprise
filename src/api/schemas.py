@@ -41,3 +41,4 @@ class ReponseSante(BaseModel):
     """Réponse de la route GET /health."""
     statut: str = Field(default="ok")
     nb_documents: int
+    modele: str

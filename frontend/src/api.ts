@@ -329,6 +329,7 @@ export async function activiteRecente(): Promise<ActiviteRecente[]> {
 export interface EtatSante {
   statut: string;
   nb_documents: number;
+  modele: string;
 }
 
 export async function etatSante(): Promise<EtatSante> {

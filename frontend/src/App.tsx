@@ -201,12 +201,17 @@ export default function App() {
 // ===========================================================================
 function BadgeEtat() {
   const [ok, setOk] = useState<boolean | null>(null);
+  const [modele, setModele] = useState<string>("");
 
   useEffect(() => {
     let actif = true;
     const verifier = () =>
       etatSante()
-        .then(() => actif && setOk(true))
+        .then((etat) => {
+          if (!actif) return;
+          setOk(true);
+          setModele(etat.modele);
+        })
         .catch(() => actif && setOk(false));
     verifier();
     const minuteur = setInterval(verifier, 30000);
@@ -216,11 +221,14 @@ function BadgeEtat() {
     };
   }, []);
 
+  // Met une majuscule à la première lettre du modèle (ex: "llama3.2" → "Llama3.2")
+  const modeleAffiche = modele ? modele.charAt(0).toUpperCase() + modele.slice(1) : "";
+
   return (
     <span className="badge-etat">
       <span className={`point-etat ${ok === false ? "point-etat--ko" : ""}`} />
       {ok === false ? "Service indisponible" : "Système opérationnel"}
-      <span className="text-slate-500"> · Mistral Local</span>
+      {modeleAffiche && <span className="text-slate-500"> · {modeleAffiche} Local</span>}
     </span>
   );
 }
