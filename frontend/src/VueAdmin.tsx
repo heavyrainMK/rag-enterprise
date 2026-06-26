@@ -113,7 +113,7 @@ export default function VueAdmin() {
     <div className="scroll-zone flex-1 overflow-y-auto px-8 py-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-white">🛡️ Tableau de bord admin</h2>
+          <h2 className="text-xl font-semibold text-white">🛡️ Tableau de bord</h2>
           <span className="badge-scope" style={{ color: "#34d399" }}>
             ● En direct
           </span>

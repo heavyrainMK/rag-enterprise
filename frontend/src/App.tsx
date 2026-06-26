@@ -57,7 +57,7 @@ const NAV_ITEMS: { vue: Vue; icon: typeof MessageSquare; label: string }[] = [
   { vue: "chat", icon: MessageSquare, label: "Chat Principal" },
   { vue: "documents", icon: BookMarked, label: "Mes documents" },
   { vue: "historique", icon: Clock, label: "Mon historique" },
-  { vue: "admin", icon: ShieldCheck, label: "Tableau de bord admin" },
+  { vue: "admin", icon: ShieldCheck, label: "Tableau de bord" },
 ];
 
 interface Message {
