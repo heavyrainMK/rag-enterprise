@@ -6,7 +6,7 @@
 // #                 historique, admin) et l'état du chat en
 // #                 streaming. Les sous-vues sont définies plus bas.
 // # Auteur ...... : Maxim Khomenko
-// # Version ..... : V2.1.0 du 23/06/2026
+// # Version ..... : V2.1.0 du 26/06/2026
 // # Licence ..... : Réalisé dans le cadre d'un projet de fin de
 // #                 licence en Informatique (L3)
 // # Usage ....... : Monté par src/main.tsx.
@@ -51,8 +51,14 @@ import VueAdmin from "./VueAdmin";
 // ---------------------------------------------------------------------------
 // Navigation
 // ---------------------------------------------------------------------------
+// Type énuméré des vues possibles de l'application. Utiliser un type fermé
+// (plutôt qu'une simple chaîne) garantit qu'on ne peut afficher qu'une vue
+// réellement prévue : toute faute de frappe est détectée par TypeScript.
 type Vue = "chat" | "documents" | "historique" | "admin";
 
+// Liste des entrées de la barre latérale. Centraliser la navigation dans un
+// tableau (plutôt que d'écrire chaque bouton à la main) permet de générer le
+// menu par une simple boucle et d'ajouter une vue en une seule ligne.
 const NAV_ITEMS: { vue: Vue; icon: typeof MessageSquare; label: string }[] = [
   { vue: "chat", icon: MessageSquare, label: "Chat Principal" },
   { vue: "documents", icon: BookMarked, label: "Mes documents" },
@@ -60,6 +66,11 @@ const NAV_ITEMS: { vue: Vue; icon: typeof MessageSquare; label: string }[] = [
   { vue: "admin", icon: ShieldCheck, label: "Tableau de bord" },
 ];
 
+// Représente un message du fil de discussion. « role » distingue la question
+// de l'utilisateur de la réponse de l'assistant. Les deux champs optionnels :
+//   - sansContexte : marque une réponse de repli (aucune source trouvée) ;
+//   - question     : pour un message assistant, mémorise la question d'origine,
+//                    ce qui permet le bouton « Reposer ».
 interface Message {
   role: "user" | "assistant";
   contenu: string;
@@ -68,6 +79,10 @@ interface Message {
 }
 
 // Extrait l'extension en badge coloré
+// Renvoie l'extension du fichier en majuscules et la classe CSS associée,
+// pour afficher une pastille de couleur différente selon le type (TXT, PDF,
+// ou autre). Le « ! » après pop() indique à TypeScript que la valeur existe
+// (on a déjà vérifié la présence d'un point dans le nom).
 function badgeFichier(nom: string) {
   const ext = nom.includes(".") ? nom.split(".").pop()!.toUpperCase() : "DOC";
   const cls =
@@ -79,6 +94,12 @@ function badgeFichier(nom: string) {
 // Composant racine
 // ===========================================================================
 export default function App() {
+  // État global de l'application :
+  //   - connecte : l'utilisateur est-il authentifié ? Initialisé à partir de
+  //     la présence d'un jeton (getToken), pour rester connecté au rechargement.
+  //   - profil   : les informations de l'utilisateur (nom, rôle…), chargées
+  //     après connexion.
+  //   - vue      : l'onglet actuellement affiché.
   const [connecte, setConnecte] = useState<boolean>(!!getToken());
   const [profil, setProfil] = useState<Profil | null>(null);
   const [vue, setVue] = useState<Vue>("chat");
@@ -88,6 +109,9 @@ export default function App() {
   // que l'utilisateur reste connecté, donc les messages persistent.
   const chat = useChat();
 
+  // À la connexion, on récupère le profil. Si la requête échoue (jeton expiré
+  // ou invalide), on déconnecte proprement : le jeton périmé est effacé et
+  // l'utilisateur est renvoyé vers l'écran de connexion.
   useEffect(() => {
     if (!connecte) return;
     monProfil()
@@ -98,6 +122,8 @@ export default function App() {
       });
   }, [connecte]);
 
+  // Déconnexion : on efface le jeton, on réinitialise le profil et la vue,
+  // et on vide le chat pour ne pas laisser de messages au prochain utilisateur.
   function seDeconnecter() {
     deconnexion();
     setProfil(null);
@@ -106,10 +132,13 @@ export default function App() {
     chat.reinitialiser();
   }
 
+  // Tant que l'utilisateur n'est pas connecté, on n'affiche que l'écran de
+  // connexion : aucune autre vue n'est accessible.
   if (!connecte) {
     return <EcranConnexion onConnecte={() => setConnecte(true)} />;
   }
 
+  // Le rôle « admin » débloque la vue tableau de bord et certaines actions.
   const estAdmin = profil?.role === "admin";
 
   return (
@@ -127,6 +156,9 @@ export default function App() {
         <nav className="flex flex-col gap-1 p-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
+            // L'entrée « admin » n'apparaît que pour les administrateurs :
+            // un utilisateur standard ne voit même pas le bouton. (La sécurité
+            // réelle reste côté backend ; ceci n'est qu'un confort visuel.)
             if (item.vue === "admin" && !estAdmin) return null;
             return (
               <button
@@ -204,17 +236,23 @@ function BadgeEtat() {
   const [modele, setModele] = useState<string>("");
 
   useEffect(() => {
+    // « actif » est un garde anti-fuite : si le composant est démonté avant
+    // qu'une requête /health ne réponde, on ne tente pas de mettre à jour un
+    // état qui n'existe plus (ce qui provoquerait un avertissement React).
     let actif = true;
     const verifier = () =>
       etatSante()
         .then((etat) => {
           if (!actif) return;
           setOk(true);
-          setModele(etat.modele);
+          setModele(etat.modele); // nom du modèle réel, renvoyé par le backend
         })
         .catch(() => actif && setOk(false));
-    verifier();
+    verifier(); // vérification immédiate au montage
+    // Puis re-vérification périodique toutes les 30 s, pour refléter en quasi
+    // temps réel une éventuelle indisponibilité du service.
     const minuteur = setInterval(verifier, 30000);
+    // Nettoyage au démontage : on désarme le garde et on stoppe le minuteur.
     return () => {
       actif = false;
       clearInterval(minuteur);
@@ -251,11 +289,16 @@ function useChat(): ChatState {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [enCours, setEnCours] = useState(false);
+  // Garde anti-double-envoi. On utilise une ref (et non un état) car sa valeur
+  // est lue/écrite de façon SYNCHRONE : un état React ne se met à jour qu'au
+  // rendu suivant, ce qui laisserait passer deux envois quasi simultanés.
   const enVolRef = useRef(false); // empêche deux flux de streaming simultanés
 
   // Met à jour le dernier message (celui de l'assistant en cours de
   // génération). Centralise le motif « copier le tableau, remplacer le
   // dernier élément » utilisé pour chaque type d'événement SSE.
+  // Note React : on ne modifie jamais le tableau en place ; on en crée une
+  // copie, car React ne détecte les changements que sur une nouvelle référence.
   const majDernierMessage = useCallback((champs: Partial<Message>) => {
     setMessages((m) => {
       if (m.length === 0) return m;
@@ -267,12 +310,17 @@ function useChat(): ChatState {
 
   const envoyer = useCallback(
     async (questionDirecte?: string) => {
+      // La question vient soit d'un appel direct (rejeu depuis l'historique),
+      // soit du champ de saisie. On ignore l'envoi si la question est vide ou
+      // si une génération est déjà en cours (double garde : état + ref).
       const question = (questionDirecte ?? input).trim();
       if (!question || enCours || enVolRef.current) return;
       enVolRef.current = true;
 
-      if (!questionDirecte) setInput("");
+      if (!questionDirecte) setInput(""); // vide le champ si saisie manuelle
       setEnCours(true);
+      // On ajoute d'emblée DEUX messages : la question de l'utilisateur, et un
+      // message assistant vide qui se remplira au fil du streaming.
       setMessages((m) => [
         ...m,
         { role: "user", contenu: question },
@@ -280,10 +328,14 @@ function useChat(): ChatState {
       ]);
 
       try {
+        // Boucle de streaming : on consomme les événements au fur et à mesure
+        // qu'ils arrivent du backend (voir streamerChat dans api.ts).
         for await (const ev of streamerChat(question)) {
           if (ev.type === "token") {
             // Cas particulier : on concatène à l'existant, donc on lit
             // l'ancien contenu dans le updater plutôt que de le figer.
+            // (Lire « dernier.contenu » à l'extérieur risquerait d'utiliser
+            // une valeur périmée ; on le lit donc dans le setMessages.)
             setMessages((m) => {
               if (m.length === 0) return m;
               const copie = [...m];
@@ -292,14 +344,18 @@ function useChat(): ChatState {
               return copie;
             });
           } else if (ev.type === "no_context") {
+            // Réponse de repli : aucune source pertinente trouvée.
             majDernierMessage({ contenu: ev.content, sansContexte: true });
           } else if (ev.type === "error") {
             majDernierMessage({ contenu: `⚠️ ${ev.content}` });
           }
         }
       } catch (e) {
+        // Erreur réseau ou serveur : on l'affiche dans la bulle assistant.
         majDernierMessage({ contenu: `⚠️ ${(e as Error).message}` });
       } finally {
+        // Quoi qu'il arrive (succès ou erreur), on relâche les gardes pour
+        // autoriser un nouvel envoi.
         setEnCours(false);
         enVolRef.current = false;
       }
@@ -307,6 +363,7 @@ function useChat(): ChatState {
     [input, enCours, majDernierMessage],
   );
 
+  // Remet le chat à zéro (déconnexion, ou bouton « Nouveau chat »).
   const reinitialiser = useCallback(() => {
     setMessages([]);
     setInput("");
@@ -327,6 +384,8 @@ function VueChat({ chat }: { chat: ChatState }) {
   const rejeuFaitRef = useRef(false); // le rejeu depuis l'historique n'a lieu qu'une fois
   const [infoUpload, setInfoUpload] = useState<string>("");
 
+  // Auto-scroll : à chaque nouveau message (ou nouveau token), on fait défiler
+  // la zone de discussion jusqu'en bas, pour suivre la réponse qui s'écrit.
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -334,6 +393,11 @@ function VueChat({ chat }: { chat: ChatState }) {
   }, [messages]);
 
   // Au montage de la vue : rejoue une question demandée depuis l'historique.
+  // Le mécanisme : la vue Historique dépose la question dans sessionStorage
+  // puis bascule vers le chat ; ici, on la récupère, on l'efface (pour ne pas
+  // la rejouer en boucle) et on l'envoie. Le rejeuFaitRef garantit que cela
+  // n'arrive qu'une seule fois par montage. Le setTimeout(…, 0) diffère
+  // l'envoi juste après le rendu initial.
   useEffect(() => {
     if (rejeuFaitRef.current) return;
     rejeuFaitRef.current = true;
@@ -346,6 +410,8 @@ function VueChat({ chat }: { chat: ChatState }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Entrée = envoyer ; Maj+Entrée = saut de ligne (comportement attendu d'un
+  // champ de discussion multiligne).
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -353,6 +419,9 @@ function VueChat({ chat }: { chat: ChatState }) {
     }
   }
 
+  // Téléversement rapide depuis le chat : le fichier part toujours en privé.
+  // Le bloc finally réinitialise le champ fichier (pour pouvoir re-sélectionner
+  // le même fichier) et efface le message d'info après quelques secondes.
   async function surFichierChoisi(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
     if (!fichier) return;
@@ -427,6 +496,9 @@ function VueChat({ chat }: { chat: ChatState }) {
 }
 
 // --- Bulle de message + sources + boutons d'action ---
+// Affiche un message. Les messages utilisateur sont alignés à droite avec un
+// style simple ; les messages assistant sont à gauche, avec un avatar, et,
+// si la réponse est terminée, un bouton « Reposer » qui relance la question.
 function BulleMessage({
   message,
   onReposer,
@@ -455,12 +527,17 @@ function BulleMessage({
           <MessageSquare size={20} className="text-white" />
         </div>
         <div className="bulle-assistant-glow max-w-[70ch] text-sm leading-relaxed text-slate-100">
+          {/* Tant que le contenu est vide (génération qui démarre), on affiche
+              des points clignotants en guise d'indicateur de chargement. */}
           {message.contenu || (
             <span className="inline-block animate-pulse text-slate-500">…</span>
           )}
         </div>
       </div>
 
+      {/* Le bouton « Reposer » n'apparaît que si la réponse est complète
+          (contenu non vide), qu'aucune génération n'est en cours (peutReposer)
+          et qu'on connaît la question d'origine. */}
       {message.contenu && peutReposer && message.question && (
         <div className="ml-[52px]">
           <button
@@ -484,9 +561,13 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState("");
   const [info, setInfo] = useState("");
+  // Destination du prochain téléversement. Réservé aux admins : eux seuls
+  // peuvent déposer dans l'espace partagé ; un utilisateur reste en « private ».
   const [scopeUpload, setScopeUpload] = useState<"private" | "shared">("private");
   const fichierRef = useRef<HTMLInputElement>(null);
 
+  // Charge (ou recharge) la liste des documents. useCallback la rend stable
+  // pour pouvoir l'utiliser comme dépendance du useEffect ci-dessous.
   const recharger = useCallback(async () => {
     setChargement(true);
     setErreur("");
@@ -520,6 +601,9 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
     }
   }
 
+  // Supprime un document après confirmation. En cas de succès, on retire le
+  // document de la liste localement (mise à jour « optimiste ») plutôt que de
+  // tout recharger depuis le serveur : l'interface réagit instantanément.
   async function supprimer(doc: InfoDocument) {
     if (!confirm(`Supprimer « ${doc.nom_fichier} » ?`)) return;
     try {
@@ -589,6 +673,9 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
                     {doc.scope === "shared" ? "Partagé" : "Privé"}
                   </span>
                 </div>
+                {/* On ne peut supprimer un document partagé que si l'on est
+                    admin ; un document privé est toujours supprimable par son
+                    propriétaire. */}
                 {(doc.scope === "private" || estAdmin) && (
                   <button
                     onClick={() => supprimer(doc)}
@@ -652,6 +739,11 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
     }
   }
 
+  // « Reposer » une question depuis l'historique : on la stocke dans
+  // sessionStorage, puis on bascule vers le chat. C'est VueChat qui, à son
+  // montage, lira cette valeur et enverra la question (voir son useEffect).
+  // Ce passage par sessionStorage permet de transmettre la question entre deux
+  // vues sans la faire remonter par des props jusqu'à App.
   function reposer(question: string) {
     sessionStorage.setItem("question_a_reposer", question);
     onReposer();
@@ -736,6 +828,10 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
 // ===========================================================================
 // En-tête commun aux vues
 // ===========================================================================
+// Petit composant réutilisable : un titre, un bouton « rafraîchir » optionnel,
+// et un emplacement « children » pour les actions propres à chaque vue
+// (téléverser, vider…). Factoriser cet en-tête évite de le réécrire dans
+// chaque vue.
 function EnteteVue({
   titre,
   onRafraichir,
@@ -772,6 +868,9 @@ function EcranConnexion({ onConnecte }: { onConnecte: () => void }) {
   const [p, setP] = useState("");
   const [erreur, setErreur] = useState("");
 
+  // Tente la connexion. En cas de succès, on prévient le parent (onConnecte)
+  // qui bascule l'application vers les vues authentifiées. En cas d'échec, on
+  // affiche le message d'erreur renvoyé par login().
   async function soumettre() {
     try {
       setErreur("");

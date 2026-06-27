@@ -7,7 +7,7 @@
 // #                 de cartes et de graphiques (recharts), avec
 // #                 rafraîchissement automatique toutes les 30 s.
 // # Auteur ...... : Maxim Khomenko
-// # Version ..... : V1.1.0 du 23/06/2026
+// # Version ..... : V1.1.0 du 26/06/2026
 // # Licence ..... : Réalisé dans le cadre d'un projet de fin de
 // #                 licence en Informatique (L3)
 // # Usage ....... : Monté par App.tsx pour la vue "admin".
@@ -36,6 +36,9 @@ import {
   type ActiviteRecente,
 } from "./api";
 
+// Couleurs de la charte graphique, définies une fois et réutilisées dans tous
+// les graphiques et badges. Les centraliser évite de répéter les codes
+// hexadécimaux partout et garantit une cohérence visuelle.
 const VIOLET = "#8b5cf6";
 const CYAN = "#06b6d4";
 
@@ -43,12 +46,23 @@ const CYAN = "#06b6d4";
 // Vue Admin
 // ===========================================================================
 export default function VueAdmin() {
+  // Les trois jeux de données du tableau de bord, plus les états d'interface :
+  //   - stats     : statistiques globales (cartes chiffrées) ;
+  //   - users     : liste des utilisateurs avec leurs compteurs ;
+  //   - activite  : dernières questions posées ;
+  //   - erreur    : message d'erreur éventuel ;
+  //   - chargement: vrai pendant le chargement initial.
   const [stats, setStats] = useState<StatsSysteme | null>(null);
   const [users, setUsers] = useState<StatsUtilisateur[]>([]);
   const [activite, setActivite] = useState<ActiviteRecente[]>([]);
   const [erreur, setErreur] = useState("");
   const [chargement, setChargement] = useState(true);
 
+  // Charge les trois sources de données EN PARALLÈLE grâce à Promise.all :
+  // les trois requêtes partent en même temps et on attend qu'elles soient
+  // toutes terminées. C'est nettement plus rapide que de les enchaîner une
+  // par une. Si l'une échoue, le catch affiche l'erreur ; le finally coupe
+  // l'indicateur de chargement dans tous les cas.
   const recharger = useCallback(async () => {
     setChargement(true);
     setErreur("");
@@ -69,6 +83,8 @@ export default function VueAdmin() {
   }, []);
 
   // Chargement initial + rafraîchissement automatique toutes les 30 s
+  // Le tableau de bord se met ainsi à jour seul, sans action de l'admin.
+  // Le retour de useEffect arrête le minuteur au démontage (évite les fuites).
   useEffect(() => {
     recharger();
     const minuteur = setInterval(recharger, 30000);
@@ -76,6 +92,8 @@ export default function VueAdmin() {
   }, [recharger]);
 
   // Données dérivées pour les graphiques
+  // On transforme la liste d'utilisateurs en un format simple attendu par le
+  // graphique en barres : un objet { nom, conversations } par utilisateur.
   const donneesConv = users.map((u) => ({
     nom: u.nom_utilisateur,
     conversations: u.nb_conversations,
@@ -95,12 +113,18 @@ export default function VueAdmin() {
   ];
 
   // Comptage des sources les plus citées (à partir de l'activité récente)
+  // On parcourt chaque activité et chacune de ses sources pour construire un
+  // dictionnaire { nom_de_source : nombre_de_citations }.
   const compteSources: Record<string, number> = {};
   activite.forEach((a) =>
     a.sources.forEach((s) => {
       compteSources[s] = (compteSources[s] || 0) + 1;
     }),
   );
+  // Puis on transforme ce dictionnaire en données de graphique :
+  //   - sort   : trie par nombre de citations décroissant ;
+  //   - slice  : ne garde que les 5 sources les plus citées ;
+  //   - map    : tronque les noms trop longs (> 20 caractères) pour l'affichage.
   const donneesSources = Object.entries(compteSources)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
@@ -129,6 +153,10 @@ export default function VueAdmin() {
 
       {erreur && <p className="mb-4 text-xs text-red-400">{erreur}</p>}
 
+      {/* On n'affiche l'indicateur « Chargement… » que lors du TOUT premier
+          chargement (chargement && !stats). Lors des rafraîchissements
+          automatiques suivants, on garde les données déjà affichées pour
+          éviter un clignotement de l'interface toutes les 30 s. */}
       {chargement && !stats ? (
         <p className="text-sm text-slate-500">Chargement…</p>
       ) : (
@@ -169,6 +197,9 @@ export default function VueAdmin() {
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
                 📊 Conversations / utilisateur
               </h3>
+              {/* Graphique en barres verticales : une barre par utilisateur,
+                  hauteur = nombre de conversations. Affiché seulement s'il y a
+                  des données (sinon, message « Aucune donnée »). */}
               <div className="h-52">
                 {donneesConv.length === 0 ? (
                   <PasDeDonnees />
@@ -197,6 +228,8 @@ export default function VueAdmin() {
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
                 👥 Répartition des utilisateurs
               </h3>
+              {/* Camembert (PieChart) admins / employés. Deux parts seulement,
+                  d'où les deux <Cell> aux couleurs de la charte. */}
               <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -238,6 +271,9 @@ export default function VueAdmin() {
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
                 📂 Sources les plus citées (activité récente)
               </h3>
+              {/* Graphique en barres HORIZONTALES (layout="vertical" chez
+                  recharts), bien adapté à l'affichage de noms de fichiers. Si
+                  aucune source n'a encore été citée, on affiche un message. */}
               <div className="h-52">
                 {donneesSources.length === 0 ? (
                   <PasDeDonnees texte="Aucune source citée pour le moment" />
@@ -358,6 +394,10 @@ export default function VueAdmin() {
 }
 
 // --- Carte de statistique ---
+// Petite carte réutilisable affichant une statistique : une icône, une grande
+// valeur chiffrée et deux libellés. Utilisée pour les quatre cartes du haut.
+// La syntaxe « icon: Icon » renomme la prop « icon » en « Icon » localement,
+// car un composant React doit commencer par une majuscule pour être rendu.
 function CarteStat({
   icon: Icon,
   valeur,
@@ -379,6 +419,9 @@ function CarteStat({
       <div
         className="text-4xl font-extrabold leading-none"
         style={{
+          // Astuce CSS pour colorer le TEXTE avec un dégradé : on applique le
+          // dégradé en fond, on le « clippe » sur la forme du texte, puis on
+          // rend le texte lui-même transparent pour laisser voir le dégradé.
           background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
@@ -394,6 +437,8 @@ function CarteStat({
   );
 }
 
+// Petit composant d'état vide, affiché à la place d'un graphique quand il n'y
+// a aucune donnée à montrer. Le texte est personnalisable via une prop.
 function PasDeDonnees({ texte = "Aucune donnée" }: { texte?: string }) {
   return (
     <div className="flex h-full items-center justify-center text-sm text-slate-600">
