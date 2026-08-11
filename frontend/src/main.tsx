@@ -13,10 +13,10 @@
 
 // StrictMode : outil de développement de React. Il n'a aucun effet en
 // production, mais en développement il aide à détecter des problèmes (effets
-// de bord mal nettoyés, API dépréciées…) en exécutant volontairement certains
-// traitements deux fois. C'est purement un garde-fou pour le développeur.
+// de bord mal nettoyés, API dépréciées...) en exécutant volontairement certains
+// traitements deux fois.
 import { StrictMode } from 'react'
-// createRoot : la fonction de React 18 qui « accroche » l'application React à
+// createRoot : la fonction de React 18 qui " accroche " l'application React à
 // un élément HTML existant de la page et active le rendu moderne (concurrent).
 import { createRoot } from 'react-dom/client'
 // Import des styles globaux (Tailwind et styles personnalisés). Importer le CSS
@@ -28,7 +28,7 @@ import App from './App.tsx'
 // Démarrage de l'application en trois temps :
 //   1. document.getElementById('root') récupère la <div id="root"> présente
 //      dans index.html ; c'est le conteneur où toute l'interface sera injectée.
-//      Le « ! » indique à TypeScript que cet élément existe forcément (il est
+//      Le " ! " indique à TypeScript que cet élément existe forcément (il est
 //      garanti par index.html), ce qui évite une vérification de nullité.
 //   2. createRoot(...) crée la racine React attachée à ce conteneur.
 //   3. .render(...) y affiche le composant <App>, enveloppé dans <StrictMode>.

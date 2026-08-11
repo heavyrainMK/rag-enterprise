@@ -31,7 +31,7 @@ from src.api.auth import (
 @pytest.fixture
 def db_session():
     """Base SQLite en mémoire isolée pour chaque test."""
-    # Une base « :memory: » vit uniquement en RAM : rapide et jetable. Comme la
+    # Une base " :memory: " vit uniquement en RAM : rapide et jetable. Comme la
     # fixture est recréée à chaque test, chacun part d'une base vierge, sans
     # dépendre de l'ordre d'exécution ni laisser de trace pour le suivant. C'est
     # le principe d'isolation des tests : aucun effet de bord partagé.
@@ -177,8 +177,8 @@ class TestAuthentification:
     def test_utilisateur_inconnu(self, db_session):
         # Nom inexistant : 401 AUSSI, exactement le même code que le mauvais mot
         # de passe ci-dessus. Ces deux tests pris ensemble verrouillent une
-        # propriété de sécurité : on ne distingue pas « nom inconnu » de « mot de
-        # passe faux », pour ne pas permettre d'énumérer les comptes existants.
+        # propriété de sécurité : on ne distingue pas " nom inconnu " de " mot de
+        # passe faux ", pour ne pas permettre d'énumérer les comptes existants.
         with pytest.raises(HTTPException) as exc_info:
             authentifier_utilisateur(db_session, "inconnu", "pass")
         assert exc_info.value.status_code == 401

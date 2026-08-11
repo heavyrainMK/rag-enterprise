@@ -2,7 +2,7 @@
 # docker-compose.yml - RAG Enterprise
 #
 # Service unique :
-#   api → FastAPI : sert l'API RAG ET le frontend React statique
+#   api --> FastAPI : sert l'API RAG ET le frontend React statique
 #         sur le port 8000.
 #
 # Ollama tourne sur l'hôte (service systemd), pas dans Docker.

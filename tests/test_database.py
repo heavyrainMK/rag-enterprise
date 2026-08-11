@@ -120,7 +120,7 @@ class TestLister:
         assert len(lister_conversations(db_session, session_id="B")) == 1
 
     def test_tri_plus_recent(self, db_session):
-        # L'ordre de retour doit être « du plus récent au plus ancien ». On
+        # L'ordre de retour doit être " du plus récent au plus ancien ". On
         # insère deux conversations et on vérifie que la SECONDE arrive en tête.
         # C'est le comportement attendu d'un historique, et il dépend du
         # order_by(desc(cree_le)) de lister_conversations.
@@ -162,7 +162,7 @@ class TestSupprimer:
     def test_format_en_dict(self, db_session):
         # Contrat de sérialisation : en_dict doit exposer EXACTEMENT cet ensemble
         # de clés, restituer les sources sous forme de liste, et formater la date
-        # en ISO 8601 (le « T » sépare date et heure). Vérifier l'ensemble exact
+        # en ISO 8601 (le " T " sépare date et heure). Vérifier l'ensemble exact
         # des clés détecte tout champ ajouté ou retiré par inadvertance.
         conv = sauvegarder_conversation(db_session, "Question", "Réponse", ["source.pdf"], "sess-1")
         d = conv.en_dict()

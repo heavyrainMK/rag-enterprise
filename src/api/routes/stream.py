@@ -21,7 +21,7 @@ from fastapi.responses import StreamingResponse
 from src.api.auth import utilisateur_courant
 from src.api.schemas import RequeteChat
 from src.core.database import get_db, sauvegarder_conversation
-# repondre_stream est le cœur RAG : un générateur qui produit des
+# repondre_stream est le coeur RAG : un générateur qui produit des
 # événements au fil de l'eau (tokens, sources, fin, erreur). REPONSE_SANS_
 # CONTEXTE est le texte de repli quand aucune source pertinente n'est
 # trouvée : on l'importe pour pouvoir l'archiver tel quel dans l'historique.
@@ -36,7 +36,7 @@ router = APIRouter(tags=["RAG Streaming"])
 def _evenement(donnees):
     """Met en forme un dictionnaire en ligne SSE valide."""
     # Le protocole SSE impose un format texte précis : chaque message est une
-    # ligne « data: <charge utile> » suivie d'une LIGNE VIDE (le double \n\n
+    # ligne " data: <charge utile> " suivie d'une LIGNE VIDE (le double \n\n
     # marque la fin de l'événement). Omettre ce double saut casserait le
     # découpage côté client. ensure_ascii=False préserve les accents (é, à)
     # au lieu de les échapper en \uXXXX, ce qui évite tout souci d'affichage.
@@ -71,7 +71,7 @@ async def chat_stream(
 
     def generer():
         """Générateur SSE - parcourt les tokens du système RAG."""
-        # Ce générateur est le « tuyau » : StreamingResponse le consomme et
+        # Ce générateur est le " tuyau " : StreamingResponse le consomme et
         # envoie chaque yield au client immédiatement. On accumule au passage
         # les tokens et les sources, car on en aura besoin À LA FIN pour
         # reconstituer la réponse complète et l'archiver (le client, lui, a
@@ -81,13 +81,13 @@ async def chat_stream(
 
         try:
             # On relaie les événements du moteur RAG en les retraduisant en
-            # lignes SSE. On ne fait pas confiance aveuglément : on filtre par
-            # type connu, ce qui évite d'émettre n'importe quoi vers le client.
+            # lignes SSE. On filtre par type connu, 
+            # ce qui évite d'émettre n'importe quoi vers le client.
             for evenement in repondre_stream(
                 requete.question,
                 # On force le nom en str : l'isolation par utilisateur côté RAG
                 # repose dessus, et on veut une valeur scalaire, pas un attribut
-                # ORM (même précaution que dans history.py).
+                # ORM.
                 nom_utilisateur=str(utilisateur.nom_utilisateur),
             ):
                 type_evenement = evenement.get("type")
@@ -136,10 +136,9 @@ async def chat_stream(
             yield _evenement({"type": "error", "content": str(exc)})
             return
 
-        # --- À partir d'ici, le streaming s'est terminé sans erreur ---
         # Sauvegarde dans l'historique après le streaming complet
         # On reconstitue la réponse en recollant les tokens. Si la liste est
-        # vide (cas « no_context »), on archive le texte de repli standard,
+        # vide (cas " no_context "), on archive le texte de repli standard,
         # pour que l'historique reflète fidèlement ce qu'a vu l'utilisateur.
         reponse_finale = "".join(tokens) if tokens else REPONSE_SANS_CONTEXTE
         try:
@@ -155,24 +154,24 @@ async def chat_stream(
                 utilisateur=str(utilisateur.nom_utilisateur),
             )
         except Exception as exc:
-            # Choix de conception assumé : si l'archivage échoue, on ne casse
-            # PAS l'expérience — l'utilisateur a déjà reçu sa réponse. On se
+            # Si l'archivage échoue, on ne casse PAS l'expérience, 
+            # l'utilisateur a déjà reçu sa réponse. On se
             # contente d'un warning. L'historique est secondaire face au service
             # rendu ; on dégrade proprement plutôt que de remonter une erreur.
             logger.warning("Impossible de sauvegarder l'historique : %s", exc)
 
     return StreamingResponse(
         generer(),
-        # Type MIME normatif du SSE : c'est lui qui dit au navigateur « ceci
-        # est un flux d'événements », pas une page ni un JSON.
+        # Type MIME normatif du SSE : c'est lui qui dit au navigateur " ceci
+        # est un flux d'événements ", pas une page ni un JSON.
         media_type="text/event-stream",
         headers={
             # Empêche tout cache de figer la réponse : un flux temps réel ne
             # doit jamais être servi depuis un cache.
             "Cache-Control": "no-cache",
-            # En-tête clé : désactive la mise en tampon de nginx. Sans lui, le
+            # Désactive la mise en tampon de nginx. Sans lui, le
             # proxy accumulerait les tokens et les délivrerait d'un bloc, ce qui
-            # anéantirait l'effet « token par token ». C'est LE réglage qui fait
+            # anéantirait l'effet " token par token ". C'est LE réglage qui fait
             # que le streaming fonctionne réellement derrière un reverse proxy.
             "X-Accel-Buffering": "no",
             # Maintient la connexion ouverte pendant toute la durée du flux.

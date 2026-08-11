@@ -24,7 +24,7 @@ def doc(contenu, source):
 
 
 def faux_vs(docs_scores):
-    # Faux « vectorstore » : un mock dont la seule méthode utile,
+    # Faux " vectorstore " : un mock dont la seule méthode utile,
     # similarity_search_with_score, renvoie une liste fixe de couples
     # (document, score). Cela permet de tester toute la logique de recherche SANS
     # ChromaDB ni modèle d'embedding, donc sans I/O ni lenteur, et avec des scores
@@ -167,7 +167,7 @@ class TestRepondreStream:
         # Cas nominal du streaming. On remplace la chaîne LangChain par une fausse
         # chaîne dont stream() produit deux tokens. On vérifie alors la SÉQUENCE
         # attendue : les tokens arrivent dans l'ordre, puis un événement final
-        # « done » porte les sources. C'est exactement ce que stream.py relaie au
+        # " done " porte les sources. C'est exactement ce que stream.py relaie au
         # client en SSE, donc ce test verrouille le contrat entre les deux.
         ctx = rag.ContexteRAG(
             contexte="contexte", sources=["shared.txt"],
@@ -188,14 +188,14 @@ class TestRepondreStream:
         types = [e["type"] for e in evenements]
         tokens = [e["content"] for e in evenements if e["type"] == "token"]
         assert tokens == ["Bon", "jour"]
-        # L'événement final doit être « done » et transporter les sources : c'est
+        # L'événement final doit être " done " et transporter les sources : c'est
         # lui qui permet à l'interface d'afficher les références après la réponse.
         assert types[-1] == "done"
         assert evenements[-1]["sources"] == ["shared.txt"]
 
     def test_erreur_recherche(self):
         # Si la préparation du contexte échoue, le streaming ne doit pas planter
-        # brutalement : il émet un événement « error » dont le message reprend la
+        # brutalement : il émet un événement " error " dont le message reprend la
         # cause. C'est ce qui permet à stream.py de transmettre une erreur propre
         # au client plutôt que de couper la connexion sans explication.
         with patch.object(rag, "preparer_contexte", side_effect=RuntimeError("boum")):

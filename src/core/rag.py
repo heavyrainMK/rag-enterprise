@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 NB_RESULTATS: int = 3
 # Seuil de distance maximale pour qu'un morceau soit jugé pertinent.
 # 1.4 (au lieu de 1.2) laisse passer les formulations possessives ou
-# indirectes (« mes objectifs » vs « Objectifs 2026 ») qui scorent un peu
+# indirectes (" mes objectifs " vs " Objectifs 2026 ") qui scorent un peu
 # plus loin. Le filtre par marge en aval (MARGE_AFFICHAGE) écarte ensuite
 # le bruit, donc assouplir ici ne dégrade pas la qualité des sources.
 #
@@ -68,14 +68,14 @@ MODELE_OPENAI: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 # Marge de tolérance sur le score : on n'affiche une source que si son score
 # est proche du meilleur score trouvé. Une source nettement moins pertinente
-# (du « bruit » sémantique) est donnée au LLM comme contexte mais pas montrée.
+# (du " bruit " sémantique) est donnée au LLM comme contexte mais pas montrée.
 #
 # Second filtre, RELATIF cette fois : il se cale sur le meilleur score obtenu
 # pour la question, et non sur une valeur fixe. L'idée : ce qui compte n'est
 # pas la distance absolue mais l'écart au morceau le plus pertinent. Deux
 # morceaux à 0,9 et 0,95 sont tous deux gardés ; un à 1,3 est écarté même s'il
-# passe le seuil absolu. C'est ce qui aligne « sources affichées » et « sources
-# qui ont réellement nourri la réponse ».
+# passe le seuil absolu. C'est ce qui aligne " sources affichées " et " sources
+# qui ont réellement nourri la réponse ".
 MARGE_AFFICHAGE: float = 0.25
 
 # Réponse de repli unique, utilisée à chaque fois qu'aucun contexte pertinent
@@ -152,7 +152,7 @@ def charger_collection(nom_collection):
     # On renvoie None plutôt que de lever une erreur quand la collection n'existe
     # pas ou est vide : une collection privée absente (utilisateur sans document)
     # est un cas NORMAL, pas une panne. Les appelants traitent ce None comme
-    # « rien à chercher ici » et passent à la suite.
+    # " rien à chercher ici " et passent à la suite.
     if not DOSSIER_VECTORS.exists():
         return None
     try:
@@ -198,8 +198,8 @@ def charger_llm():
     présente, utilise OpenAI à la place.
     """
     # Le choix du LLM est piloté par l'environnement, pas codé en dur : par
-    # défaut Ollama en local (cohérent avec l'objectif « aucune donnée ne quitte
-    # l'infrastructure »), avec une bascule optionnelle vers OpenAI si on le
+    # défaut Ollama en local (cohérent avec l'objectif " aucune donnée ne quitte
+    # l'infrastructure "), avec une bascule optionnelle vers OpenAI si on le
     # demande explicitement ET qu'une clé est fournie.
     utiliser_openai = os.getenv("USE_OPENAI", "false").lower() == "true"
     if utiliser_openai:
@@ -222,7 +222,7 @@ def charger_llm():
 
 def construire_chaine():
     """
-    Construit la chaîne LangChain de génération : prompt → modèle → parser.
+    Construit la chaîne LangChain de génération : prompt --> modèle --> parser.
 
     Factorisée ici car repondre() et repondre_stream() montent exactement
     la même chaîne ; seule l'invocation diffère (invoke vs stream).
@@ -231,7 +231,7 @@ def construire_chaine():
         template=MODELE_PROMPT,
         input_variables=["context", "question"],
     )
-    # L'opérateur « | » chaîne les étapes (syntaxe LCEL de LangChain) : le prompt
+    # L'opérateur " | " chaîne les étapes (syntaxe LCEL de LangChain) : le prompt
     # rempli alimente le LLM, dont la sortie passe par un parser qui en extrait
     # le texte brut. La même chaîne sait répondre d'un bloc (invoke) ou en flux
     # (stream), d'où la factorisation.
@@ -295,7 +295,7 @@ def rechercher_multi(question, nom_utilisateur):
         return [], [], []
 
     # Tri par score croissant : les morceaux les plus pertinents en tête. Ce tri
-    # conditionne le « meilleur score » dont dépend le second filtre.
+    # conditionne le " meilleur score " dont dépend le second filtre.
     resultats.sort(key=lambda x: x[1])
 
     # On attache le score à chaque document pour pouvoir filtrer l'affichage
@@ -351,7 +351,7 @@ def filtrer_par_pertinence(documents):
     construction du contexte : ainsi le LLM ne reçoit que les sources
     réellement pertinentes, et la réponse ne peut pas être polluée par un
     document privé qui contient un terme commun mais une info hors-sujet
-    (ex : la ligne « tickets restaurant -88 € » d'un bulletin de paie).
+    (ex : la ligne " tickets restaurant -88 € " d'un bulletin de paie).
 
     Le résultat : les sources affichées à l'utilisateur = exactement les
     sources qui ont nourri la réponse.
@@ -359,7 +359,7 @@ def filtrer_par_pertinence(documents):
     # Implémentation du SECOND filtre (relatif). On prend le meilleur score
     # (la plus petite distance, déjà en tête après le tri) comme référence, et
     # on ne garde que ce qui se trouve dans une marge au-dessus. C'est ce qui
-    # distingue « assez bon dans l'absolu » de « vraiment dans le sujet ».
+    # distingue " assez bon dans l'absolu " de " vraiment dans le sujet ".
     if not documents:
         return []
     meilleur = min(
@@ -389,8 +389,8 @@ def preparer_contexte(question, nom_utilisateur):
     # Recalcule les listes de sources à partir des seuls documents retenus.
     # Point essentiel : on reconstruit les sources APRÈS le second filtre, sur
     # le sous-ensemble réellement conservé. Sans ce recalcul, on afficherait des
-    # sources écartées du contexte, et la promesse « sources affichées = sources
-    # utilisées » serait fausse. On classe « privé » d'après l'appartenance à
+    # sources écartées du contexte, et la promesse " sources affichées = sources
+    # utilisées " serait fausse. On classe " privé " d'après l'appartenance à
     # l'ensemble des sources privées, le reste étant considéré comme partagé.
     privees_retenues = sorted({
         d.metadata.get("source", "inconnu") for d in documents
@@ -483,7 +483,7 @@ def repondre_stream(question, nom_utilisateur="anonyme"):
 
     try:
         # stream() produit la réponse token par token : on relaie chacun
-        # immédiatement, ce qui donne l'effet « machine à écrire » côté client.
+        # immédiatement, ce qui donne l'effet " machine à écrire " côté client.
         for token in chaine.stream({"context": ctx.contexte, "question": question}):
             yield {"type": "token", "content": token}
     except Exception as exc:

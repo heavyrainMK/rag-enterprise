@@ -74,7 +74,7 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-# Verre dépoli (classe utilitaire pour les éléments en "glassmorphism")
+# Verre dépoli
 # --------------------------------------------------------------------------- */
 .glass {
   background: var(--glass-bg);
@@ -162,7 +162,7 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-# Citations, code, blockquote (formatage Markdown éventuel des réponses)
+# Citations, code, blockquote
 # --------------------------------------------------------------------------- */
 blockquote {
   border-left: 3px solid var(--brand-accent);
@@ -182,7 +182,7 @@ code {
   font-size: 0.85em;
 }
 
-/* Titres et emphase (si tu rends du Markdown plus tard) */
+/* Titres et emphase */
 h1, h2, h3, h4, h5, h6 { color: var(--texte-blanc); }
 em, strong { color: var(--texte-doux); }
 
@@ -218,7 +218,7 @@ em, strong { color: var(--texte-doux); }
 }
 
 /* ---------------------------------------------------------------------------
-# Champs de saisie (écran de connexion, recherche…)
+# Champs de saisie (écran de connexion, recherche...)
 # --------------------------------------------------------------------------- */
 .champ {
   background: rgba(0, 0, 0, 0.3);
@@ -243,7 +243,7 @@ em, strong { color: var(--texte-doux); }
 .scroll-zone::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 .scroll-zone::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
 
-/* Scrollbar globale par défaut (cohérence sur toute la page) */
+/* Scrollbar globale par défaut */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }

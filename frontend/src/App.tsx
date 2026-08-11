@@ -66,11 +66,11 @@ const NAV_ITEMS: { vue: Vue; icon: typeof MessageSquare; label: string }[] = [
   { vue: "admin", icon: ShieldCheck, label: "Tableau de bord" },
 ];
 
-// Représente un message du fil de discussion. « role » distingue la question
+// Représente un message du fil de discussion. " role " distingue la question
 // de l'utilisateur de la réponse de l'assistant. Les deux champs optionnels :
 //   - sansContexte : marque une réponse de repli (aucune source trouvée) ;
 //   - question     : pour un message assistant, mémorise la question d'origine,
-//                    ce qui permet le bouton « Reposer ».
+//                    ce qui permet le bouton " Reposer ".
 interface Message {
   role: "user" | "assistant";
   contenu: string;
@@ -81,8 +81,7 @@ interface Message {
 // Extrait l'extension en badge coloré
 // Renvoie l'extension du fichier en majuscules et la classe CSS associée,
 // pour afficher une pastille de couleur différente selon le type (TXT, PDF,
-// ou autre). Le « ! » après pop() indique à TypeScript que la valeur existe
-// (on a déjà vérifié la présence d'un point dans le nom).
+// ou autre). Le " ! " après pop() indique à TypeScript que la valeur existe.
 function badgeFichier(nom: string) {
   const ext = nom.includes(".") ? nom.split(".").pop()!.toUpperCase() : "DOC";
   const cls =
@@ -97,7 +96,7 @@ export default function App() {
   // État global de l'application :
   //   - connecte : l'utilisateur est-il authentifié ? Initialisé à partir de
   //     la présence d'un jeton (getToken), pour rester connecté au rechargement.
-  //   - profil   : les informations de l'utilisateur (nom, rôle…), chargées
+  //   - profil   : les informations de l'utilisateur (nom, rôle...), chargées
   //     après connexion.
   //   - vue      : l'onglet actuellement affiché.
   const [connecte, setConnecte] = useState<boolean>(!!getToken());
@@ -138,7 +137,7 @@ export default function App() {
     return <EcranConnexion onConnecte={() => setConnecte(true)} />;
   }
 
-  // Le rôle « admin » débloque la vue tableau de bord et certaines actions.
+  // Le rôle " admin " débloque la vue tableau de bord et certaines actions.
   const estAdmin = profil?.role === "admin";
 
   return (
@@ -149,16 +148,15 @@ export default function App() {
       {/* SIDEBAR */}
       <aside className="glass relative z-10 flex w-72 flex-col">
         <div className="app-header flex items-center gap-3 px-6 py-5">
-          <span className="text-2xl">📚</span>
+          <span className="text-2xl"></span>
           <h1 className="text-lg font-semibold text-white">RAG Enterprise</h1>
         </div>
 
         <nav className="flex flex-col gap-1 p-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            // L'entrée « admin » n'apparaît que pour les administrateurs :
-            // un utilisateur standard ne voit même pas le bouton. (La sécurité
-            // réelle reste côté backend ; ceci n'est qu'un confort visuel.)
+            // L'entrée " admin " n'apparaît que pour les administrateurs :
+            // un utilisateur standard ne voit même pas le bouton.
             if (item.vue === "admin" && !estAdmin) return null;
             return (
               <button
@@ -186,7 +184,7 @@ export default function App() {
             <LogOut size={14} />
             Se déconnecter
           </button>
-          <p className="text-xs text-slate-600">Projet L3 · 100% local</p>
+          <p className="text-xs text-slate-600">Projet L3 - 100% local</p>
         </div>
       </aside>
 
@@ -236,7 +234,7 @@ function BadgeEtat() {
   const [modele, setModele] = useState<string>("");
 
   useEffect(() => {
-    // « actif » est un garde anti-fuite : si le composant est démonté avant
+    // " actif " est un garde anti-fuite : si le composant est démonté avant
     // qu'une requête /health ne réponde, on ne tente pas de mettre à jour un
     // état qui n'existe plus (ce qui provoquerait un avertissement React).
     let actif = true;
@@ -259,14 +257,14 @@ function BadgeEtat() {
     };
   }, []);
 
-  // Met une majuscule à la première lettre du modèle (ex: "llama3.2" → "Llama3.2")
+  // Met une majuscule à la première lettre du modèle (ex: "llama3.2" --> "Llama3.2")
   const modeleAffiche = modele ? modele.charAt(0).toUpperCase() + modele.slice(1) : "";
 
   return (
     <span className="badge-etat">
       <span className={`point-etat ${ok === false ? "point-etat--ko" : ""}`} />
       {ok === false ? "Service indisponible" : "Système opérationnel"}
-      {modeleAffiche && <span className="text-slate-500"> · {modeleAffiche} Local</span>}
+      {modeleAffiche && <span className="text-slate-500"> - {modeleAffiche} Local</span>}
     </span>
   );
 }
@@ -295,8 +293,8 @@ function useChat(): ChatState {
   const enVolRef = useRef(false); // empêche deux flux de streaming simultanés
 
   // Met à jour le dernier message (celui de l'assistant en cours de
-  // génération). Centralise le motif « copier le tableau, remplacer le
-  // dernier élément » utilisé pour chaque type d'événement SSE.
+  // génération). Centralise le motif " copier le tableau, remplacer le
+  // dernier élément " utilisé pour chaque type d'événement SSE.
   // Note React : on ne modifie jamais le tableau en place ; on en crée une
   // copie, car React ne détecte les changements que sur une nouvelle référence.
   const majDernierMessage = useCallback((champs: Partial<Message>) => {
@@ -334,7 +332,7 @@ function useChat(): ChatState {
           if (ev.type === "token") {
             // Cas particulier : on concatène à l'existant, donc on lit
             // l'ancien contenu dans le updater plutôt que de le figer.
-            // (Lire « dernier.contenu » à l'extérieur risquerait d'utiliser
+            // (Lire " dernier.contenu " à l'extérieur risquerait d'utiliser
             // une valeur périmée ; on le lit donc dans le setMessages.)
             setMessages((m) => {
               if (m.length === 0) return m;
@@ -347,12 +345,12 @@ function useChat(): ChatState {
             // Réponse de repli : aucune source pertinente trouvée.
             majDernierMessage({ contenu: ev.content, sansContexte: true });
           } else if (ev.type === "error") {
-            majDernierMessage({ contenu: `⚠️ ${ev.content}` });
+            majDernierMessage({ contenu: ` ${ev.content}` });
           }
         }
       } catch (e) {
         // Erreur réseau ou serveur : on l'affiche dans la bulle assistant.
-        majDernierMessage({ contenu: `⚠️ ${(e as Error).message}` });
+        majDernierMessage({ contenu: ` ${(e as Error).message}` });
       } finally {
         // Quoi qu'il arrive (succès ou erreur), on relâche les gardes pour
         // autoriser un nouvel envoi.
@@ -363,7 +361,7 @@ function useChat(): ChatState {
     [input, enCours, majDernierMessage],
   );
 
-  // Remet le chat à zéro (déconnexion, ou bouton « Nouveau chat »).
+  // Remet le chat à zéro (déconnexion, ou bouton " Nouveau chat ").
   const reinitialiser = useCallback(() => {
     setMessages([]);
     setInput("");
@@ -396,7 +394,7 @@ function VueChat({ chat }: { chat: ChatState }) {
   // Le mécanisme : la vue Historique dépose la question dans sessionStorage
   // puis bascule vers le chat ; ici, on la récupère, on l'efface (pour ne pas
   // la rejouer en boucle) et on l'envoie. Le rejeuFaitRef garantit que cela
-  // n'arrive qu'une seule fois par montage. Le setTimeout(…, 0) diffère
+  // n'arrive qu'une seule fois par montage. Le setTimeout(..., 0) diffère
   // l'envoi juste après le rendu initial.
   useEffect(() => {
     if (rejeuFaitRef.current) return;
@@ -425,12 +423,12 @@ function VueChat({ chat }: { chat: ChatState }) {
   async function surFichierChoisi(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
     if (!fichier) return;
-    setInfoUpload(`Envoi de « ${fichier.name} »…`);
+    setInfoUpload(`Envoi de " ${fichier.name} "...`);
     try {
       const res = await televerserDocument(fichier, "private");
       setInfoUpload(res.message);
     } catch (err) {
-      setInfoUpload(`⚠️ ${(err as Error).message}`);
+      setInfoUpload(` ${(err as Error).message}`);
     } finally {
       if (fichierRef.current) fichierRef.current.value = "";
       setTimeout(() => setInfoUpload(""), 6000);
@@ -498,7 +496,7 @@ function VueChat({ chat }: { chat: ChatState }) {
 // --- Bulle de message + sources + boutons d'action ---
 // Affiche un message. Les messages utilisateur sont alignés à droite avec un
 // style simple ; les messages assistant sont à gauche, avec un avatar, et,
-// si la réponse est terminée, un bouton « Reposer » qui relance la question.
+// si la réponse est terminée, un bouton " Reposer " qui relance la question.
 function BulleMessage({
   message,
   onReposer,
@@ -530,12 +528,12 @@ function BulleMessage({
           {/* Tant que le contenu est vide (génération qui démarre), on affiche
               des points clignotants en guise d'indicateur de chargement. */}
           {message.contenu || (
-            <span className="inline-block animate-pulse text-slate-500">…</span>
+            <span className="inline-block animate-pulse text-slate-500">...</span>
           )}
         </div>
       </div>
 
-      {/* Le bouton « Reposer » n'apparaît que si la réponse est complète
+      {/* Le bouton " Reposer " n'apparaît que si la réponse est complète
           (contenu non vide), qu'aucune génération n'est en cours (peutReposer)
           et qu'on connaît la question d'origine. */}
       {message.contenu && peutReposer && message.question && (
@@ -562,7 +560,7 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
   const [erreur, setErreur] = useState("");
   const [info, setInfo] = useState("");
   // Destination du prochain téléversement. Réservé aux admins : eux seuls
-  // peuvent déposer dans l'espace partagé ; un utilisateur reste en « private ».
+  // peuvent déposer dans l'espace partagé ; un utilisateur reste en " private ".
   const [scopeUpload, setScopeUpload] = useState<"private" | "shared">("private");
   const fichierRef = useRef<HTMLInputElement>(null);
 
@@ -588,13 +586,13 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
   async function surFichierChoisi(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
     if (!fichier) return;
-    setInfo(`Envoi de « ${fichier.name} »…`);
+    setInfo(`Envoi de " ${fichier.name} "...`);
     try {
       const res = await televerserDocument(fichier, scopeUpload);
       setInfo(res.message);
       setTimeout(recharger, 1500);
     } catch (err) {
-      setInfo(`⚠️ ${(err as Error).message}`);
+      setInfo(` ${(err as Error).message}`);
     } finally {
       if (fichierRef.current) fichierRef.current.value = "";
       setTimeout(() => setInfo(""), 6000);
@@ -602,10 +600,10 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
   }
 
   // Supprime un document après confirmation. En cas de succès, on retire le
-  // document de la liste localement (mise à jour « optimiste ») plutôt que de
+  // document de la liste localement (mise à jour " optimiste ") plutôt que de
   // tout recharger depuis le serveur : l'interface réagit instantanément.
   async function supprimer(doc: InfoDocument) {
-    if (!confirm(`Supprimer « ${doc.nom_fichier} » ?`)) return;
+    if (!confirm(`Supprimer " ${doc.nom_fichier} " ?`)) return;
     try {
       await supprimerDocument(doc.scope, doc.nom_fichier);
       setDocs((d) => d.filter((x) => x !== doc));
@@ -650,7 +648,7 @@ function VueDocuments({ estAdmin }: { estAdmin: boolean }) {
       {erreur && <p className="mb-4 text-xs text-red-400">{erreur}</p>}
 
       {chargement ? (
-        <p className="text-sm text-slate-500">Chargement…</p>
+        <p className="text-sm text-slate-500">Chargement...</p>
       ) : docs.length === 0 ? (
         <p className="text-sm text-slate-500">Aucun document. Téléversez-en un pour commencer.</p>
       ) : (
@@ -739,7 +737,7 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
     }
   }
 
-  // « Reposer » une question depuis l'historique : on la stocke dans
+  // " Reposer " une question depuis l'historique : on la stocke dans
   // sessionStorage, puis on bascule vers le chat. C'est VueChat qui, à son
   // montage, lira cette valeur et enverra la question (voir son useEffect).
   // Ce passage par sessionStorage permet de transmettre la question entre deux
@@ -766,7 +764,7 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
           value={recherche}
           onChange={(e) => setRecherche(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && recharger(recherche)}
-          placeholder="Rechercher dans vos questions…"
+          placeholder="Rechercher dans vos questions..."
           className="flex-1 bg-transparent px-2 py-1 text-sm text-slate-100 outline-none placeholder:text-slate-500"
         />
         <button
@@ -780,7 +778,7 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
       {erreur && <p className="mb-4 text-xs text-red-400">{erreur}</p>}
 
       {chargement ? (
-        <p className="text-sm text-slate-500">Chargement…</p>
+        <p className="text-sm text-slate-500">Chargement...</p>
       ) : convs.length === 0 ? (
         <p className="text-sm text-slate-500">Aucune conversation enregistrée.</p>
       ) : (
@@ -828,9 +826,9 @@ function VueHistorique({ onReposer }: { onReposer: () => void }) {
 // ===========================================================================
 // En-tête commun aux vues
 // ===========================================================================
-// Petit composant réutilisable : un titre, un bouton « rafraîchir » optionnel,
-// et un emplacement « children » pour les actions propres à chaque vue
-// (téléverser, vider…). Factoriser cet en-tête évite de le réécrire dans
+// Petit composant réutilisable : un titre, un bouton " rafraîchir " optionnel,
+// et un emplacement " children " pour les actions propres à chaque vue
+// (téléverser, vider...). Factoriser cet en-tête évite de le réécrire dans
 // chaque vue.
 function EnteteVue({
   titre,
@@ -887,7 +885,7 @@ function EcranConnexion({ onConnecte }: { onConnecte: () => void }) {
       <div className="aurora-orb aurora-orb--cyan" />
       <div className="modale relative z-10 w-80 p-6">
         <div className="mb-5 flex items-center gap-3">
-          <span className="text-2xl">📚</span>
+          <span className="text-2xl"></span>
           <h1 className="text-lg font-semibold text-white">RAG Enterprise</h1>
         </div>
         <input

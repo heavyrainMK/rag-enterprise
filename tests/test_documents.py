@@ -38,7 +38,7 @@ def faux_admin():
 
 
 def faux_user():
-    # Même principe, mais avec le rôle « user » : sert à vérifier qu'un compte
+    # Même principe, mais avec le rôle " user " : sert à vérifier qu'un compte
     # standard se voit refuser ce qui est réservé aux admins.
     u = MagicMock(spec=Utilisateur)
     u.nom_utilisateur = "testuser"
@@ -63,7 +63,7 @@ def en_admin():
 
 @pytest.fixture
 def en_user():
-    # Variante « connecté en utilisateur standard ».
+    # Variante " connecté en utilisateur standard ".
     app.dependency_overrides[utilisateur_courant] = lambda: faux_user()
     yield
     app.dependency_overrides.clear()
@@ -71,7 +71,7 @@ def en_user():
 
 @pytest.fixture
 def contenu_txt():
-    # Petit contenu binaire réutilisable comme « fichier » téléversé dans les
+    # Petit contenu binaire réutilisable comme " fichier " téléversé dans les
     # tests. En bytes car un upload manipule des octets, pas du texte.
     return b"Politique RH - Article 1 : Les employes ont 25 jours de conges."
 
@@ -199,7 +199,7 @@ class TestSuppression:
 
     def test_supprimer_fichier_inexistant(self, tmp_path, en_admin):
         # Supprimer un fichier absent renvoie 404, pas une erreur serveur. La
-        # route distingue proprement « rien à supprimer » d'un vrai problème.
+        # route distingue proprement " rien à supprimer " d'un vrai problème.
         partage = tmp_path / "shared"; partage.mkdir()
         with patch("src.api.routes.documents.DOSSIER_PARTAGE", partage):
             r = client.delete("/documents/shared/fantome.txt")
@@ -207,16 +207,16 @@ class TestSuppression:
 
 
 class TestPathTraversal:
-    # Classe de sécurité critique : le « path traversal » est l'attaque où un nom
-    # de fichier piégé (avec des « ../ ») tente de sortir du dossier autorisé pour
+    # Classe de sécurité critique : le " path traversal " est l'attaque où un nom
+    # de fichier piégé (avec des " ../ ") tente de sortir du dossier autorisé pour
     # lire ou écrire ailleurs sur le serveur. Ces tests prouvent que l'API neutralise
     # ces tentatives, à l'écriture comme à la suppression.
 
     def test_televersement_traversal_reste_dans_dossier(self, tmp_path, en_admin, contenu_txt):
-        # On téléverse un fichier nommé « ../../secret.txt » pour tenter d'écrire
-        # HORS du dossier partagé. Vérifications : le fichier « dehors » n'est
+        # On téléverse un fichier nommé " ../../secret.txt " pour tenter d'écrire
+        # HORS du dossier partagé. Vérifications : le fichier " dehors " n'est
         # jamais créé, un seul fichier est écrit, et il l'est DANS le dossier
-        # autorisé avec un nom nettoyé (plus de « .. »). Le nom est neutralisé,
+        # autorisé avec un nom nettoyé (plus de " .. "). Le nom est neutralisé,
         # l'écriture reste confinée.
         partage = tmp_path / "shared"; partage.mkdir()
         dehors = tmp_path / "secret.txt"
@@ -231,17 +231,17 @@ class TestPathTraversal:
         assert ".." not in ecrits[0].name
 
     def test_suppression_traversal_rejetee(self, tmp_path, en_admin):
-        # Même attaque côté suppression, avec des « ../ » encodés en URL
-        # (%2F = « / »), pour viser un fichier important hors du dossier. La
+        # Même attaque côté suppression, avec des " ../ " encodés en URL
+        # (%2F = " / "), pour viser un fichier important hors du dossier. La
         # garantie ESSENTIELLE, vérifiée en premier, est que le fichier visé
         # SURVIT : l'attaque ne supprime rien hors du dossier autorisé.
         #
         # Côté code de statut, deux issues sont acceptables et toutes deux sûres :
         #  - 400/404 si la requête atteint la route, qui rejette le nom piégé ;
-        #  - 405 si, après décodage, le serveur normalise « ../../important.txt »
-        #    en « /important.txt » : la requête ne correspond alors plus à la
+        #  - 405 si, après décodage, le serveur normalise " ../../important.txt "
+        #    en " /important.txt " : la requête ne correspond alors plus à la
         #    route DELETE et est arrêtée en amont par le routeur (seule une route
-        #    GET catch-all existe pour ce chemin, d'où « méthode non autorisée »).
+        #    GET catch-all existe pour ce chemin, d'où " méthode non autorisée ").
         # Dans les deux cas la suppression n'a pas lieu ; on accepte donc ces
         # trois codes, l'assertion vraiment déterminante restant dehors.exists().
         partage = tmp_path / "shared"; partage.mkdir()
@@ -254,7 +254,7 @@ class TestPathTraversal:
 
     def test_suppression_nettoie_index(self, tmp_path, en_admin):
         # Au-delà du fichier, supprimer un document doit AUSSI purger ses vecteurs
-        # de l'index ChromaDB, sinon des « vecteurs orphelins » continueraient de
+        # de l'index ChromaDB, sinon des " vecteurs orphelins " continueraient de
         # polluer la recherche. On utilise un mock pour vérifier que la purge est
         # appelée EXACTEMENT une fois, avec le bon nom de fichier en argument.
         # Ce test garde la trace du problème d'index désynchronisé rencontré

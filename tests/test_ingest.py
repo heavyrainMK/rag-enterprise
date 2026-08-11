@@ -29,7 +29,7 @@ class TestChargement:
     def test_charger_txt(self, tmp_path):
         # On écrit un vrai fichier dans le dossier temporaire de pytest, puis on
         # vérifie trois choses : le document est chargé, son contenu est lu, et
-        # sa métadonnée « source » vaut le nom de fichier. Cette source est
+        # sa métadonnée " source " vaut le nom de fichier. Cette source est
         # essentielle : c'est elle qui permettra plus tard de citer le document.
         txt = tmp_path / "politique.txt"
         txt.write_text("Article 1 : Les employés ont 25 jours de congés.")
@@ -61,7 +61,7 @@ class TestChargement:
 
     def test_source_est_nom_seul(self, tmp_path):
         # La source doit être le NOM du fichier seul, sans aucun morceau de
-        # chemin (« / »). On évite ainsi de divulguer l'arborescence du serveur
+        # chemin (" / "). On évite ainsi de divulguer l'arborescence du serveur
         # dans les citations affichées à l'utilisateur.
         (tmp_path / "rapport_q3.txt").write_text("données Q3")
         docs = charger_documents(tmp_path)
@@ -140,7 +140,7 @@ class TestNomCollection:
 
     def test_contraintes_chromadb(self):
         # ChromaDB impose des règles strictes sur les noms de collection :
-        # longueur entre 3 et 63, caractères limités, et pas de « .. ». On les
+        # longueur entre 3 et 63, caractères limités, et pas de " .. ". On les
         # vérifie sur des cas volontairement hostiles (accents, caractères non
         # latins, que des points, nom d'un seul caractère, nom très long). Quelle
         # que soit l'entrée, le nom produit doit rester VALIDE pour ChromaDB,

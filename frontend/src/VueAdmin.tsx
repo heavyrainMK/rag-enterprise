@@ -129,7 +129,7 @@ export default function VueAdmin() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([nom, n]) => ({
-      nom: nom.length > 20 ? nom.slice(0, 17) + "…" : nom,
+      nom: nom.length > 20 ? nom.slice(0, 17) + "..." : nom,
       utilisations: n,
     }));
 
@@ -137,9 +137,9 @@ export default function VueAdmin() {
     <div className="scroll-zone flex-1 overflow-y-auto px-8 py-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-white">🛡️ Tableau de bord</h2>
+          <h2 className="text-xl font-semibold text-white"> Tableau de bord</h2>
           <span className="badge-scope" style={{ color: "#34d399" }}>
-            ● En direct
+            En direct
           </span>
         </div>
         <button
@@ -153,12 +153,12 @@ export default function VueAdmin() {
 
       {erreur && <p className="mb-4 text-xs text-red-400">{erreur}</p>}
 
-      {/* On n'affiche l'indicateur « Chargement… » que lors du TOUT premier
+      {/* On n'affiche l'indicateur " Chargement... " que lors du TOUT premier
           chargement (chargement && !stats). Lors des rafraîchissements
           automatiques suivants, on garde les données déjà affichées pour
           éviter un clignotement de l'interface toutes les 30 s. */}
       {chargement && !stats ? (
-        <p className="text-sm text-slate-500">Chargement…</p>
+        <p className="text-sm text-slate-500">Chargement...</p>
       ) : (
         <>
           {/* Cartes de stats */}
@@ -168,13 +168,13 @@ export default function VueAdmin() {
                 icon={Users}
                 valeur={stats.nb_utilisateurs}
                 label="Utilisateurs"
-                sous={`${stats.nb_utilisateurs_actifs} actifs · ${stats.nb_admins} admins`}
+                sous={`${stats.nb_utilisateurs_actifs} actifs - ${stats.nb_admins} admins`}
               />
               <CarteStat
                 icon={MessageSquare}
                 valeur={stats.nb_conversations}
                 label="Conversations"
-                sous={`${stats.conversations_aujourdhui} auj. · ${stats.conversations_semaine} semaine`}
+                sous={`${stats.conversations_aujourdhui} auj. - ${stats.conversations_semaine} semaine`}
               />
               <CarteStat
                 icon={FileText}
@@ -195,11 +195,11 @@ export default function VueAdmin() {
           <div className="mb-7 grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="glass rounded-2xl p-5">
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
-                📊 Conversations / utilisateur
+                Conversations / utilisateur
               </h3>
               {/* Graphique en barres verticales : une barre par utilisateur,
                   hauteur = nombre de conversations. Affiché seulement s'il y a
-                  des données (sinon, message « Aucune donnée »). */}
+                  des données (sinon, message " Aucune donnée "). */}
               <div className="h-52">
                 {donneesConv.length === 0 ? (
                   <PasDeDonnees />
@@ -226,7 +226,7 @@ export default function VueAdmin() {
 
             <div className="glass rounded-2xl p-5">
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
-                👥 Répartition des utilisateurs
+                Répartition des utilisateurs
               </h3>
               {/* Camembert (PieChart) admins / employés. Deux parts seulement,
                   d'où les deux <Cell> aux couleurs de la charte. */}
@@ -269,7 +269,7 @@ export default function VueAdmin() {
 
             <div className="glass rounded-2xl p-5">
               <h3 className="mb-4 text-sm font-semibold text-slate-100">
-                📂 Sources les plus citées (activité récente)
+                Sources les plus citées (activité récente)
               </h3>
               {/* Graphique en barres HORIZONTALES (layout="vertical" chez
                   recharts), bien adapté à l'affichage de noms de fichiers. Si
@@ -308,7 +308,7 @@ export default function VueAdmin() {
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             {/* Utilisateurs */}
             <div className="glass rounded-2xl p-5">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">👥 Utilisateurs</h3>
+              <h3 className="mb-4 text-sm font-semibold text-slate-100">Utilisateurs</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -337,7 +337,7 @@ export default function VueAdmin() {
                             className="badge-scope"
                             style={{ color: u.actif ? "#6ee7b7" : "#fca5a5" }}
                           >
-                            {u.actif ? "✓ actif" : "✗ inactif"}
+                            {u.actif ? "actif" : "inactif"}
                           </span>
                         </td>
                         <td className="px-3 py-2 font-semibold text-violet-300">
@@ -355,7 +355,7 @@ export default function VueAdmin() {
 
             {/* Activité récente */}
             <div className="glass rounded-2xl p-5">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">🕐 Activité récente</h3>
+              <h3 className="mb-4 text-sm font-semibold text-slate-100">Activité récente</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -396,7 +396,7 @@ export default function VueAdmin() {
 // --- Carte de statistique ---
 // Petite carte réutilisable affichant une statistique : une icône, une grande
 // valeur chiffrée et deux libellés. Utilisée pour les quatre cartes du haut.
-// La syntaxe « icon: Icon » renomme la prop « icon » en « Icon » localement,
+// La syntaxe " icon: Icon " renomme la prop " icon " en " Icon " localement,
 // car un composant React doit commencer par une majuscule pour être rendu.
 function CarteStat({
   icon: Icon,
@@ -419,9 +419,9 @@ function CarteStat({
       <div
         className="text-4xl font-extrabold leading-none"
         style={{
-          // Astuce CSS pour colorer le TEXTE avec un dégradé : on applique le
-          // dégradé en fond, on le « clippe » sur la forme du texte, puis on
-          // rend le texte lui-même transparent pour laisser voir le dégradé.
+          // On applique le dégradé en fond, on le " clippe " sur 
+          // la forme du texte, puis on rend le texte lui-même transparent 
+          // pour laisser voir le dégradé.
           background: `linear-gradient(135deg, ${VIOLET}, ${CYAN})`,
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",

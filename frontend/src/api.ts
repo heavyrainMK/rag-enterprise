@@ -21,7 +21,7 @@ const API_BASE = ""; // proxy en dev, même origine en prod
 
 // --- Stockage du token JWT (en mémoire + localStorage) ---
 // Le jeton est gardé à deux endroits complémentaires :
-//   - dans la variable « token » (mémoire vive) pour un accès immédiat et
+//   - dans la variable " token " (mémoire vive) pour un accès immédiat et
 //     synchrone à chaque requête, sans relire le disque ;
 //   - dans localStorage (persistant) pour que la session survive à un
 //     rafraîchissement de page ou à la fermeture de l'onglet.
@@ -63,14 +63,14 @@ function authHeaders(): Record<string, string> {
 }
 
 // --- Construit une Error à partir d'une réponse en échec ---
-// Tente de lire le champ 'detail' renvoyé par FastAPI ; retombe sur
+// Tente de lire le champ "detail" renvoyé par FastAPI ; retombe sur
 // un message générique si le corps n'est pas du JSON exploitable.
 //
 // Pourquoi cette fonction : quand le backend FastAPI refuse une requête, il
 // renvoie en général un JSON de la forme { "detail": "message explicatif" }.
-// On veut afficher CE message précis à l'utilisateur (ex. « Fichier trop
-// volumineux ») plutôt qu'un code d'erreur brut. Mais une réponse peut aussi
-// ne pas être du JSON (erreur réseau, page d'erreur HTML…) : le try/catch
+// On veut afficher CE message précis à l'utilisateur (ex. " Fichier trop
+// volumineux ") plutôt qu'un code d'erreur brut. Mais une réponse peut aussi
+// ne pas être du JSON (erreur réseau, page d'erreur HTML...) : le try/catch
 // garantit alors qu'on retombe proprement sur un message générique au lieu
 // de planter.
 async function erreurDepuisReponse(reponse: Response): Promise<Error> {
@@ -97,10 +97,10 @@ export interface InfoConnexion {
 }
 
 // --- Connexion : POST /auth/login (form-data OAuth2) ---
-// Particularité : la route de login attend un encodage « form-urlencoded »
-// (et non du JSON), car elle suit la convention OAuth2 « password flow »
+// Particularité : la route de login attend un encodage " form-urlencoded "
+// (et non du JSON), car elle suit la convention OAuth2 " password flow "
 // implémentée par FastAPI. C'est pourquoi on construit un URLSearchParams
-// avec les champs « username » et « password » plutôt qu'un objet JSON.
+// avec les champs " username " et " password " plutôt qu'un objet JSON.
 export async function login(username: string, password: string): Promise<InfoConnexion> {
   const corps = new URLSearchParams();
   corps.append("username", username);
@@ -150,7 +150,7 @@ export async function monProfil(): Promise<Profil> {
 // Streaming RAG
 // ---------------------------------------------------------------------------
 // Type des événements reçus pendant le streaming d'une réponse. Le backend
-// envoie une SUITE d'événements de natures différentes ; ce type « union »
+// envoie une SUITE d'événements de natures différentes ; ce type " union "
 // les énumère tous, ce qui permet à TypeScript de vérifier qu'on traite
 // chaque cas correctement (token, absence de contexte, erreur, fin) :
 //   - "token"      : un fragment de texte de la réponse, à afficher aussitôt ;
@@ -169,7 +169,7 @@ export type EvenementSSE =
     };
 
 // --- Streaming : POST /chat/stream, lecture token par token ---
-// Cette fonction est un « générateur asynchrone » (async function*) : au lieu
+// Cette fonction est un " générateur asynchrone " (async function*) : au lieu
 // de renvoyer une réponse complète d'un coup, elle PRODUIT (yield) les
 // événements au fur et à mesure qu'ils arrivent. Le composant appelant peut
 // ainsi afficher la réponse mot à mot, comme un assistant conversationnel.
@@ -184,17 +184,17 @@ export async function* streamerChat(
       ...authHeaders(), // requête authentifiée : on ajoute le jeton JWT
     },
     // session_id permet de regrouper les échanges d'une même conversation ;
-    // « ?? null » envoie explicitement null si aucune session n'est fournie.
+    // " ?? null " envoie explicitement null si aucune session n'est fournie.
     body: JSON.stringify({ question, session_id: sessionId ?? null }),
   });
 
-  // On vérifie à la fois le statut HTTP ET la présence d'un corps « lisible »
+  // On vérifie à la fois le statut HTTP ET la présence d'un corps " lisible "
   // en flux (reponse.body). Sans corps, impossible de streamer : on échoue.
   if (!reponse.ok || !reponse.body) {
     throw new Error(`Erreur serveur (${reponse.status}).`);
   }
 
-  // Lecture du flux : le corps arrive par morceaux d'octets (« chunks »).
+  // Lecture du flux : le corps arrive par morceaux d'octets (" chunks ").
   //   - lecteur  : permet de lire ces morceaux un par un, à mesure qu'ils
   //                arrivent du réseau ;
   //   - decodeur : transforme les octets bruts en texte ;
@@ -206,7 +206,7 @@ export async function* streamerChat(
 
   while (true) {
     const { done, value } = await lecteur.read();
-    // « done » devient vrai quand le serveur a fini d'envoyer : on sort.
+    // " done " devient vrai quand le serveur a fini d'envoyer : on sort.
     if (done) break;
 
     // On ajoute le nouveau morceau (décodé en texte) à ce qu'on avait déjà.
@@ -241,7 +241,7 @@ export async function* streamerChat(
 // Documents : GET /documents, POST /documents/upload, DELETE /documents/...
 // ---------------------------------------------------------------------------
 // Métadonnées d'un document, telles que renvoyées par l'API.
-// « scope » distingue les documents partagés (visibles de tous) des documents
+// " scope " distingue les documents partagés (visibles de tous) des documents
 // privés (visibles du seul propriétaire) : c'est le cœur de l'isolation.
 export interface InfoDocument {
   nom_fichier: string;
@@ -268,7 +268,7 @@ export async function listerDocuments(): Promise<ListeDocuments> {
 }
 
 // Réponse renvoyée après un téléversement réussi.
-// « ingestion_lancee » indique si le document a déclenché une réindexation
+// " ingestion_lancee " indique si le document a déclenché une réindexation
 // (calcul des vecteurs) afin de devenir immédiatement interrogeable.
 export interface ReponseTeleversement {
   nom_fichier: string;
@@ -278,9 +278,9 @@ export interface ReponseTeleversement {
 }
 
 // scope = "shared" (admin) ou "private"
-// Téléverse un fichier. Le scope par défaut est « private » : un utilisateur
+// Téléverse un fichier. Le scope par défaut est " private " : un utilisateur
 // dépose par défaut dans son espace personnel ; seul un admin peut déposer en
-// « shared ».
+// " shared ".
 export async function televerserDocument(
   fichier: File,
   scope: "shared" | "private" = "private",
@@ -294,12 +294,12 @@ export async function televerserDocument(
     `${API_BASE}/documents/upload?scope=${scope}`,
     {
       method: "POST",
-      headers: authHeaders(), // NE PAS fixer Content-Type : le boundary FormData est auto
+      headers: authHeaders(), // Le boundary FormData est auto
       body: corps,
     },
   );
 
-  // En cas d'échec, on remonte le message « detail » précis du backend
+  // En cas d'échec, on remonte le message " detail " précis du backend
   // (ex. extension non autorisée, droits insuffisants) plutôt qu'un message
   // générique : l'utilisateur sait exactement pourquoi son envoi a échoué.
   if (!reponse.ok) {
@@ -311,7 +311,7 @@ export async function televerserDocument(
 
 // Supprime un document identifié par son scope et son nom de fichier.
 // encodeURIComponent protège le nom de fichier : s'il contient des caractères
-// spéciaux (espaces, accents, « / »…), ils sont encodés pour ne pas casser
+// spéciaux (espaces, accents, " / "...), ils sont encodés pour ne pas casser
 // l'URL ni provoquer de comportement inattendu côté serveur.
 export async function supprimerDocument(
   scope: "shared" | "private",
@@ -341,8 +341,8 @@ export interface Conversation {
   cree_le: string;
 }
 
-// Réponse paginée de l'historique. « limite » et « decalage » servent à la
-// pagination (voir consulterHistorique ci-dessous), « total » au comptage.
+// Réponse paginée de l'historique. " limite " et " decalage " servent à la
+// pagination (voir consulterHistorique ci-dessous), " total " au comptage.
 export interface ReponseHistorique {
   conversations: Conversation[];
   total: number;
@@ -352,10 +352,10 @@ export interface ReponseHistorique {
 
 // Récupère l'historique de l'utilisateur, avec pagination et recherche.
 //   - limite   : nombre maximum de conversations renvoyées (taille de page) ;
-//   - decalage : nombre de conversations à sauter (pour aller « page suivante ») ;
+//   - decalage : nombre de conversations à sauter (pour aller " page suivante ") ;
 //   - recherche: filtre optionnel sur le texte des questions.
 // On construit la chaîne de requête avec URLSearchParams, qui encode
-// proprement chaque paramètre, et on n'ajoute « recherche » que s'il est
+// proprement chaque paramètre, et on n'ajoute " recherche " que s'il est
 // effectivement fourni.
 export async function consulterHistorique(
   limite = 20,
@@ -458,7 +458,7 @@ export async function activiteRecente(): Promise<ActiviteRecente[]> {
 // ---------------------------------------------------------------------------
 // Santé du système : GET /health (route publique, pas de JWT requis)
 // ---------------------------------------------------------------------------
-// Forme de la réponse de /health. « modele » a été ajouté pour que l'interface
+// Forme de la réponse de /health. " modele " a été ajouté pour que l'interface
 // affiche dynamiquement le modèle de langage réellement actif (ex. "llama3.2")
 // au lieu d'un nom codé en dur.
 export interface EtatSante {
@@ -469,7 +469,7 @@ export interface EtatSante {
 
 // Interroge la route publique /health. Pas d'en-tête d'authentification ici :
 // la route est volontairement accessible sans jeton, car elle sert à vérifier
-// que le service répond (badge « Système opérationnel ») même avant connexion.
+// que le service répond (badge " Système opérationnel ") même avant connexion.
 export async function etatSante(): Promise<EtatSante> {
   const reponse = await fetch(`${API_BASE}/health`);
   if (!reponse.ok) throw new Error("Service indisponible.");

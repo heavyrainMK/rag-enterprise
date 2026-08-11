@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 # Toute la persistance tient dans un seul fichier SQLite local : aucune base
-# externe à installer ou administrer, ce qui colle à l'objectif « 100 % local »
+# externe à installer ou administrer, ce qui colle à l'objectif " 100 % local "
 # du projet. Le chemin est relatif au répertoire de lancement du serveur.
 CHEMIN_BASE: Path = Path("rag_history.db")
 URL_BASE: str = f"sqlite:///{CHEMIN_BASE}"
@@ -54,7 +54,7 @@ moteur = create_engine(
     # (utile pour déboguer, trop verbeux en fonctionnement normal).
     echo=False,
 )
-# sessionmaker est une « usine » à sessions. autocommit/autoflush désactivés :
+# sessionmaker est une " usine " à sessions. autocommit/autoflush désactivés :
 # on maîtrise explicitement quand on valide (commit) et quand on synchronise
 # avec la base, ce qui rend le comportement transactionnel prévisible.
 SessionLocale = sessionmaker(autocommit=False, autoflush=False, bind=moteur)
@@ -100,7 +100,7 @@ class Conversation(Base):
     question = Column(Text, nullable=False)
     reponse = Column(Text, nullable=False)
     # Les sources sont stockées en JSON dans une colonne texte : SQLite ne gère
-    # pas de type « liste ». On sérialise donc la liste en chaîne à l'écriture
+    # pas de type " liste ". On sérialise donc la liste en chaîne à l'écriture
     # et on la désérialise à la lecture (voir sources_en_liste plus bas).
     sources = Column(String(1000), default="[]")
     # index=True sur utilisateur et session_id : ce sont les colonnes sur
@@ -234,8 +234,8 @@ def ajouter_colonne_utilisateur():
     if "conversations" not in inspecteur.get_table_names():
         return
     # On n'ajoute la colonne que si elle est réellement absente : c'est ce test
-    # qui rend la migration idempotente (relançable sans erreur « colonne déjà
-    # existante »).
+    # qui rend la migration idempotente (relançable sans erreur " colonne déjà
+    # existante ").
     colonnes = {col["name"] for col in inspecteur.get_columns("conversations")}
     if "utilisateur" in colonnes:
         return
@@ -254,7 +254,7 @@ def get_db():
     La session est fermée automatiquement après usage.
     """
     # Patron classique d'injection de dépendance FastAPI : on crée une session
-    # par requête, on la « yield » à la route, et le finally garantit sa
+    # par requête, on la " yield " à la route, et le finally garantit sa
     # fermeture même si la route lève une exception. Une session par requête
     # évite tout partage d'état entre requêtes concurrentes.
     db = SessionLocale()
@@ -276,8 +276,8 @@ def appliquer_filtres(requete, session_id=None, utilisateur=None, recherche=None
     synchronisés (mêmes filtres appliqués de la même façon).
     """
     # Point unique de définition des filtres : lister, compter et vider passent
-    # tous par ici. C'est ce qui garantit que « ce que je liste », « ce que je
-    # compte » et « ce que je vide » s'appuient EXACTEMENT sur les mêmes
+    # tous par ici. C'est ce qui garantit que " ce que je liste ", " ce que je
+    # compte " et " ce que je vide " s'appuient EXACTEMENT sur les mêmes
     # critères. Toute divergence (ex. un total qui ne correspond pas à la liste)
     # serait sinon un bug difficile à traquer.
     if utilisateur:
@@ -285,8 +285,8 @@ def appliquer_filtres(requete, session_id=None, utilisateur=None, recherche=None
     if session_id:
         requete = requete.filter(Conversation.session_id == session_id)
     if recherche:
-        # ilike = LIKE insensible à la casse ; les « % » entourant le terme en
-        # font une recherche « contient ». La requête est paramétrée par
+        # ilike = LIKE insensible à la casse ; les " % " entourant le terme en
+        # font une recherche " contient ". La requête est paramétrée par
         # SQLAlchemy, ce qui évite toute injection SQL via le mot-clé saisi.
         requete = requete.filter(Conversation.question.ilike(f"%{recherche}%"))
     return requete
@@ -412,7 +412,7 @@ def vider_conversations(db, utilisateur=None):
     """
     # Le même paramètre utilisateur commande deux comportements bien distincts :
     # filtré (un compte vide les siennes) ou non filtré (un admin vide tout).
-    # C'est exactement la sémantique attendue par les routes de history.py.
+    # C'est la sémantique attendue par les routes de history.py.
     requete = appliquer_filtres(db.query(Conversation), utilisateur=utilisateur)
     # On compte AVANT de supprimer pour pouvoir renvoyer le nombre d'éléments
     # effacés (information utile à journaliser et à retourner au client).

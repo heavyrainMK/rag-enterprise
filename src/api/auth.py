@@ -18,8 +18,8 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
-# OAuth2PasswordBearer met en place le schéma d'authentification « Bearer
-# token » : il indique à FastAPI où se trouve la route de login et comment
+# OAuth2PasswordBearer met en place le schéma d'authentification " Bearer
+# token " : il indique à FastAPI où se trouve la route de login et comment
 # extraire automatiquement le jeton de l'en-tête Authorization des requêtes.
 from fastapi.security import OAuth2PasswordBearer
 # python-jose fournit l'encodage et le décodage des JWT. JWTError est l'erreur
@@ -43,8 +43,6 @@ logger = logging.getLogger(__name__)
 # en production si ce repli n'a pas été remplacé.
 SECRET_PAR_DEFAUT: str = "changer-cette-cle-secrete-en-production"
 CLE_SECRETE: str = os.getenv("JWT_SECRET_KEY", SECRET_PAR_DEFAUT)
-# HS256 : signature symétrique (le même secret signe et vérifie). Simple et
-# suffisant ici, où c'est le même service qui émet et valide les jetons.
 ALGORITHME: str = "HS256"
 # Durée de vie d'un jeton, en minutes (480 = 8 h par défaut, soit une journée
 # de travail). Paramétrable par variable d'environnement. C'est un compromis :
@@ -53,7 +51,7 @@ ALGORITHME: str = "HS256"
 DUREE_JETON_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))
 
 # tokenUrl indique à la documentation Swagger (et au flux OAuth2) quelle route
-# appeler pour obtenir un jeton. Cela alimente aussi le bouton « Authorize »
+# appeler pour obtenir un jeton. Cela alimente aussi le bouton " Authorize "
 # de l'interface auto-générée.
 schema_oauth2 = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -74,7 +72,7 @@ def hacher_mot_de_passe(mot_de_passe):
     """Hache un mot de passe avec bcrypt."""
     # On ne stocke JAMAIS un mot de passe en clair. bcrypt produit une
     # empreinte irréversible : on ne peut pas retrouver le mot de passe à
-    # partir du hachage. gensalt génère un « sel » aléatoire intégré au
+    # partir du hachage. gensalt génère un " sel " aléatoire intégré au
     # résultat, si bien que deux utilisateurs ayant le même mot de passe
     # obtiennent deux hachages différents, ce qui contre les attaques par
     # tables précalculées. bcrypt est aussi volontairement lent, pour rendre
@@ -108,13 +106,12 @@ def creer_jeton(donnees):
         Jeton JWT encodé.
     """
     # On copie le dictionnaire reçu avant d'y ajouter l'expiration, pour ne pas
-    # modifier l'objet de l'appelant par effet de bord (bonne hygiène : une
-    # fonction ne devrait pas muter ses arguments à l'insu de qui l'appelle).
+    # modifier l'objet de l'appelant par effet de bord.
     a_encoder = donnees.copy()
-    # On calcule l'instant d'expiration en UTC (datetime « conscient » du
+    # On calcule l'instant d'expiration en UTC (datetime " conscient " du
     # fuseau) pour éviter toute ambiguïté de fuseau horaire entre serveurs.
     expiration = datetime.now(timezone.utc) + timedelta(minutes=DUREE_JETON_MINUTES)
-    # « exp » est un champ standard du JWT : les bibliothèques le reconnaissent
+    # " exp " est un champ standard du JWT : les bibliothèques le reconnaissent
     # et rejettent automatiquement un jeton dont la date est dépassée.
     a_encoder["exp"] = expiration
     return jwt.encode(a_encoder, CLE_SECRETE, algorithm=ALGORITHME)
@@ -133,7 +130,7 @@ def decoder_jeton(jeton):
         # et encore valide.
         contenu = jwt.decode(jeton, CLE_SECRETE, algorithms=[ALGORITHME])
         nom = contenu.get("sub")
-        # « sub » (subject) identifie le titulaire du jeton. Un jeton
+        # " sub " (subject) identifie le titulaire du jeton. Un jeton
         # techniquement valide mais sans sujet est inexploitable : on le
         # rejette explicitement plutôt que de laisser passer un nom vide.
         if not nom:
@@ -145,10 +142,10 @@ def decoder_jeton(jeton):
         return contenu
     except JWTError as exc:
         # On traduit toute erreur de la bibliothèque en 401 avec un message
-        # volontairement vague (« invalide ou expiré ») : on ne révèle pas
+        # volontairement vague (" invalide ou expiré ") : on ne révèle pas
         # POURQUOI le jeton est rejeté, pour ne pas aider un attaquant. L'en-
         # tête WWW-Authenticate: Bearer signale au client le schéma attendu.
-        # Le « from exc » conserve la cause d'origine dans la trace, utile au
+        # Le " from exc " conserve la cause d'origine dans la trace, utile au
         # diagnostic côté serveur sans l'exposer au client.
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -174,7 +171,7 @@ def creer_utilisateur(db, nom_utilisateur, mot_de_passe, role="user"):
     Lève une HTTPException 409 si le nom est déjà pris.
     """
     # On vérifie l'unicité AVANT d'insérer : 409 Conflict est le code adapté
-    # pour « la ressource existe déjà ». Ici, révéler que le nom est pris est
+    # pour " la ressource existe déjà ". Ici, révéler que le nom est pris est
     # acceptable (c'est une inscription, pas une tentative de connexion).
     if trouver_utilisateur(db, nom_utilisateur):
         raise HTTPException(
@@ -208,10 +205,10 @@ def authentifier_utilisateur(db, nom_utilisateur, mot_de_passe):
     """
     utilisateur = trouver_utilisateur(db, nom_utilisateur)
 
-    # Choix de sécurité important : on traite « nom inconnu » et « mauvais mot
-    # de passe » de façon identique, avec le MÊME message 401. Distinguer les
+    # Choix de sécurité important : on traite " nom inconnu " et " mauvais mot
+    # de passe " de façon identique, avec le MÊME message 401. Distinguer les
     # deux permettrait à un attaquant d'énumérer les comptes existants. L'ordre
-    # du « or » court-circuite proprement : si l'utilisateur est None, on
+    # du " or " court-circuite proprement : si l'utilisateur est None, on
     # n'évalue pas la vérification du mot de passe (qui planterait), mais le
     # message unique renvoyé masque de toute façon lequel des deux cas s'applique.
     if utilisateur is None or not verifier_mot_de_passe(mot_de_passe, str(utilisateur.mot_de_passe_hache)):
@@ -223,7 +220,7 @@ def authentifier_utilisateur(db, nom_utilisateur, mot_de_passe):
 
     # Un compte peut exister avec de bons identifiants mais avoir été désactivé
     # par un admin. On le distingue ici par un 403 (interdit) explicite : à ce
-    # stade l'identité est prouvée, donc lui dire « compte désactivé » ne fuite
+    # stade l'identité est prouvée, donc lui dire " compte désactivé " ne fuite
     # rien et l'oriente vers la bonne action (contacter un admin).
     if not bool(utilisateur.actif):
         raise HTTPException(

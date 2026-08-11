@@ -51,7 +51,7 @@ class RequeteInscription(BaseModel):
 # Réponse renvoyée après une connexion réussie : le jeton et quelques infos.
 class ReponseJeton(BaseModel):
     access_token: str
-    token_type: str = "bearer"  # convention OAuth2 ; le client renvoie « Bearer <jeton> »
+    token_type: str = "bearer"  # convention OAuth2 ; le client renvoie " Bearer <jeton> "
     nom_utilisateur: str
     role: str
 
@@ -79,14 +79,14 @@ def inscription(
     requete: RequeteInscription,
     db=Depends(get_db),
     # exiger_admin : seul un administrateur déjà connecté peut créer des
-    # comptes. Le « _ » signale qu'on ne se sert pas de la valeur retournée,
+    # comptes. Le " _ " signale qu'on ne se sert pas de la valeur retournée,
     # seul son contrôle d'accès compte (sinon la requête est rejetée avant).
     _=Depends(exiger_admin),
 ):
     """Crée un nouveau compte. Réservé aux administrateurs."""
     # La logique de création (hachage du mot de passe, vérification d'unicité)
-    # est déléguée à creer_utilisateur (dans src.api.auth). « en_dict() »
-    # renvoie la forme publique, et « ** » déballe ce dictionnaire en arguments.
+    # est déléguée à creer_utilisateur (dans src.api.auth). " en_dict() "
+    # renvoie la forme publique, et " ** " déballe ce dictionnaire en arguments.
     nouveau = creer_utilisateur(db, requete.nom_utilisateur, requete.mot_de_passe, requete.role)
     return UtilisateurSortie(**nouveau.en_dict())
 
@@ -105,7 +105,7 @@ def inscription_premier_admin(
     Crée le tout premier compte admin.
     Ne fonctionne que si aucun utilisateur n'existe encore.
     """
-    # Problème de « l'œuf et la poule » : créer un compte exige d'être admin,
+    # Problème de " l'oeuf et la poule " : créer un compte exige d'être admin,
     # mais au tout début il n'existe aucun admin. Cette route résout cela : elle
     # est ouverte (pas de exiger_admin), MAIS uniquement tant que la base est
     # vide. Dès qu'un utilisateur existe, elle se verrouille (403) et l'on doit
@@ -127,8 +127,8 @@ def inscription_premier_admin(
 )
 def connexion(
     # OAuth2PasswordRequestForm : dépendance fournie par FastAPI qui lit les
-    # champs « username » et « password » envoyés au format formulaire. Suivre
-    # ce standard OAuth2 permet au bouton « Authorize » de la page /docs de
+    # champs " username " et " password " envoyés au format formulaire. Suivre
+    # ce standard OAuth2 permet au bouton " Authorize " de la page /docs de
     # fonctionner directement, sans configuration supplémentaire.
     formulaire=Depends(OAuth2PasswordRequestForm),
     db=Depends(get_db),
@@ -140,7 +140,7 @@ def connexion(
     # 1. Vérifier les identifiants (compare le mot de passe au hachage stocké).
     #    En cas d'échec, authentifier_utilisateur lève une erreur 401.
     utilisateur = authentifier_utilisateur(db, formulaire.username, formulaire.password)
-    # 2. Forger un jeton JWT signé contenant le nom (« sub ») et le rôle. Ce
+    # 2. Forger un jeton JWT signé contenant le nom (" sub ") et le rôle. Ce
     #    jeton sera renvoyé par le client à chaque requête pour prouver son
     #    identité, sans avoir à renvoyer le mot de passe.
     jeton = creer_jeton({"sub": utilisateur.nom_utilisateur, "role": utilisateur.role})

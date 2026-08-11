@@ -91,7 +91,7 @@ def filtre_proprietaire(utilisateur):
     Détermine le filtre de propriété : un admin voit tout (None),
     un utilisateur standard ne voit que ses propres conversations.
     """
-    # Renvoyer None signifie « aucun filtre de propriétaire » côté base :
+    # Renvoyer None signifie " aucun filtre de propriétaire " côté base :
     # l'admin récupère donc l'ensemble des conversations. Pour un compte
     # standard, on renvoie son nom, qui servira de clause WHERE. C'est ici
     # que se joue l'isolation par utilisateur, en un seul point centralisé.
@@ -106,12 +106,12 @@ def charger_conversation_autorisee(db, conversation_id, utilisateur):
     On utilise 404 (et non 403) pour ne pas révéler l'existence d'une
     conversation appartenant à quelqu'un d'autre.
     """
-    # On factorise ici le « charger + contrôler l'accès » utilisé par
+    # On factorise ici le " charger + contrôler l'accès " utilisé par
     # plusieurs routes (détail, suppression). Centraliser cette vérification
-    # évite de la réécrire — et donc d'oublier un cas — à chaque endroit.
+    # évite de la réécrire et donc d'oublier un cas à chaque endroit.
     conv = db.query(Conversation).filter(Conversation.id == conversation_id).first()
-    # Le piège de sécurité classique : distinguer « n'existe pas » de
-    # « existe mais ne t'appartient pas » fuiterait de l'information (un
+    # Le piège de sécurité classique : distinguer " n'existe pas " de
+    # " existe mais ne t'appartient pas " fuiterait de l'information (un
     # attaquant pourrait sonder les id existants). On répond donc 404 dans
     # les deux cas, avec le même message. Un admin, lui, passe toujours.
     if not conv or (
@@ -206,8 +206,7 @@ def retirer_conversation(
     Supprime une conversation.
     Un utilisateur ne peut supprimer que les siennes ; un admin, n'importe laquelle.
     """
-    # On revérifie l'autorisation AVANT de supprimer (et non en se fiant à
-    # un contrôle fait plus tôt) : une suppression est irréversible, la
+    # On revérifie l'autorisation AVANT de supprimer : une suppression est irréversible, la
     # vérification doit donc être au plus près de l'action destructrice.
     charger_conversation_autorisee(db, conversation_id, utilisateur)
     supprimer_conversation(db, conversation_id)
@@ -224,8 +223,8 @@ def vider_historique(
 ):
     """Supprime les conversations de l'utilisateur connecté."""
     # Même filtre que pour la lecture : un standard ne vide que les siennes.
-    # Réutiliser filtre_proprietaire garantit que « ce que je vide » est
-    # exactement « ce que je vois », sans divergence de règle entre routes.
+    # Réutiliser filtre_proprietaire garantit que " ce que je vide " est
+    # exactement " ce que je vois ", sans divergence de règle entre routes.
     proprietaire = filtre_proprietaire(utilisateur)
     total = vider_conversations(db, utilisateur=proprietaire)
     # On journalise les suppressions en masse : c'est une opération

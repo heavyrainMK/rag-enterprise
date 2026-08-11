@@ -86,7 +86,7 @@ def exiger_admin_si_partage(scope, utilisateur):
     """Exige le rôle admin pour toute opération sur l'espace partagé."""
     # Contrôle de droits : seul un admin peut écrire ou supprimer dans l'espace
     # partagé (commun à tous). Un utilisateur standard reste cantonné à son
-    # espace privé. Refus explicite par un code 403 (« interdit »).
+    # espace privé. Refus explicite par un code 403 (" interdit ").
     if scope == "shared" and str(utilisateur.role) != "admin":
         raise HTTPException(
             status_code=403,
@@ -102,7 +102,7 @@ def nom_sur(nom_fichier):
     # SÉCURITÉ (1re barrière) : Path(...).name ne conserve que le dernier
     # segment du chemin. Ainsi "../../etc/passwd" devient "passwd" : on neutralise
     # toute tentative d'écrire ailleurs que dans le dossier prévu (attaque dite
-    # « path traversal »). On refuse aussi les noms vides ou réduits à "." / "..".
+    # " path traversal "). On refuse aussi les noms vides ou réduits à "." / "..".
     nom = Path(str(nom_fichier or "")).name
     if not nom or nom in {".", ".."}:
         raise HTTPException(status_code=400, detail="Nom de fichier invalide.")
@@ -114,10 +114,10 @@ def chemin_dans_dossier(dossier, nom_fichier):
     Construit le chemin du fichier et vérifie qu'il reste bien
     à l'intérieur du dossier autorisé.
     """
-    # SÉCURITÉ (2e barrière, défense en profondeur) : même après avoir nettoyé
+    # SÉCURITÉ (2e barrière) : même après avoir nettoyé
     # le nom, on vérifie que le chemin final, une fois RÉSOLU (.resolve() suit
     # les liens et simplifie les ".."), pointe bien à l'intérieur du dossier
-    # autorisé. On exige que « base » soit le dossier cible lui-même ou l'un de
+    # autorisé. On exige que " base " soit le dossier cible lui-même ou l'un de
     # ses parents. Toute échappée hors du dossier est rejetée (400).
     nom = nom_sur(nom_fichier)
     base = dossier.resolve()
@@ -223,9 +223,9 @@ def supprimer_de_lindex(nom_collection, nom_fichier):
     """
     # Cette fonction est ESSENTIELLE à la cohérence du système : quand on
     # supprime un document du disque, il faut aussi retirer ses vecteurs de
-    # l'index, sinon ils deviendraient des « vecteurs orphelins » qui
+    # l'index, sinon ils deviendraient des " vecteurs orphelins " qui
     # pollueraient encore les recherches. La suppression cible précisément les
-    # morceaux dont la métadonnée « source » correspond au fichier supprimé.
+    # morceaux dont la métadonnée " source " correspond au fichier supprimé.
     if not DOSSIER_VECTORS.exists():
         return
     try:
@@ -242,7 +242,7 @@ def supprimer_de_lindex(nom_collection, nom_fichier):
         vs._collection.delete(where={"source": nom_fichier})
         logger.info("Morceaux supprimés de '%s' pour source='%s'.", nom_collection, nom_fichier)
     except Exception as exc:
-        # Tolérant aux erreurs : un échec de nettoyage de l'index ne doit pas
+        # Un échec de nettoyage de l'index ne doit pas
         # faire échouer la suppression du fichier elle-même (déjà effectuée).
         logger.warning("Nettoyage ChromaDB impossible (%s, %s) : %s", nom_collection, nom_fichier, exc)
 
@@ -279,13 +279,13 @@ async def televerser_document(
     nom_fichier = chemin.name
 
     taille_mo = await ecrire_sur_disque(file, chemin)
-    logger.info("Document sauvegardé : %s → %s (%.2f Mo)", nom_fichier, scope, taille_mo)
+    logger.info("Document sauvegardé : %s --> %s (%.2f Mo)", nom_fichier, scope, taille_mo)
 
     # Ré-indexation lancée EN ARRIÈRE-PLAN (background task) : la réponse HTTP
     # part immédiatement, sans faire attendre l'utilisateur pendant le calcul
     # des vecteurs (qui peut durer plusieurs secondes).
-    #   - espace partagé  → on réindexe la collection partagée (nom = None) ;
-    #   - espace privé    → on réindexe la collection de cet utilisateur.
+    #   - espace partagé  --> on réindexe la collection partagée (nom = None) ;
+    #   - espace privé    --> on réindexe la collection de cet utilisateur.
     if scope == "shared":
         background_tasks.add_task(ingestion_arriere_plan, None)
     else:
@@ -338,7 +338,7 @@ async def supprimer_document(
     chemin = chemin_dans_dossier(dossier, nom_fichier)
     nom = chemin.name
 
-    # Fichier inexistant : on renvoie 404 (« non trouvé »).
+    # Fichier inexistant : on renvoie 404 (" non trouvé ").
     if not chemin.exists():
         raise HTTPException(status_code=404, detail=f"'{nom}' introuvable.")
 

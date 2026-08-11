@@ -59,7 +59,7 @@ EN_PRODUCTION: bool = ENV == "production"
 # Les origines CORS autorisées sont configurables par variable d'environnement.
 # On part d'une liste de valeurs locales par défaut (utiles en développement),
 # puis on découpe sur les virgules en nettoyant chaque entrée et en écartant
-# les vides : ainsi « a, ,b » ne produit pas d'origine vide parasite.
+# les vides : ainsi " a, ,b " ne produit pas d'origine vide parasite.
 _ORIGINES_DEFAUT = "http://localhost:8000,http://localhost:8001,http://127.0.0.1:8001"
 ORIGINES_CORS: list = [
     origine.strip()
@@ -76,7 +76,7 @@ def verifier_securite():
     CORS est ouvert à toutes les origines. En développement : simple
     avertissement.
     """
-    # Principe « fail-fast » : mieux vaut refuser de démarrer qu'exposer un
+    # Principe " fail-fast " : mieux vaut refuser de démarrer qu'exposer un
     # service mal configuré. On accumule TOUS les problèmes avant de décider,
     # pour les signaler d'un coup plutôt qu'un par un à chaque relance.
     cors_ouvert = "*" in ORIGINES_CORS
@@ -85,7 +85,7 @@ def verifier_securite():
     if secret_est_faible():
         problemes.append("JWT_SECRET_KEY non défini ou laissé à sa valeur par défaut")
     if cors_ouvert:
-        # Un CORS ouvert (« * ») combiné aux cookies/identifiants est une
+        # Un CORS ouvert (" * ") combiné aux cookies/identifiants est une
         # faille classique : n'importe quel site pourrait appeler l'API au nom
         # de l'utilisateur. Interdit en production.
         problemes.append("CORS_ORIGINS autorise toutes les origines ('*')")
@@ -131,7 +131,7 @@ def migrer_anciens_documents():
                 # supprimer l'original, plus prudent qu'un déplacement.
                 shutil.copy2(f, dest)
                 migres += 1
-                logger.info("Migration : %s → shared/", f.name)
+                logger.info("Migration : %s --> shared/", f.name)
     if migres:
         logger.info("Migration terminée : %d fichier(s) déplacé(s) vers shared/.", migres)
 
@@ -177,7 +177,7 @@ async def lifespan(app):
     documents, puis préchauffe les modèles pour accélérer le premier appel.
     """
     # lifespan est le mécanisme moderne de FastAPI pour exécuter du code au
-    # démarrage et à l'arrêt. Tout ce qui précède le « yield » s'exécute une
+    # démarrage et à l'arrêt. Tout ce qui précède le " yield " s'exécute une
     # fois, au lancement ; ce qui suit, à l'extinction. L'ORDRE compte : on
     # vérifie la sécurité d'abord (pour échouer tôt si la config est mauvaise),
     # puis on crée la base, on migre, et enfin on préchauffe les modèles.
@@ -218,7 +218,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ORIGINES_CORS,
     # allow_credentials=True autorise l'envoi de cookies/jetons. C'est
-    # précisément ce qui rend un « allow_origins=* » dangereux, d'où le
+    # précisément ce qui rend un " allow_origins=* " dangereux, d'où le
     # contrôle fait dans verifier_securite.
     allow_credentials=True,
     allow_methods=["*"],
@@ -238,7 +238,7 @@ async def journaliser_requetes(request, call_next):
     reponse = await call_next(request)
     duree = time.perf_counter() - debut
     logger.info(
-        "%s %s → %d (%.2fs)",
+        "%s %s --> %d (%.2fs)",
         request.method, request.url.path,
         reponse.status_code, duree,
     )
@@ -321,8 +321,8 @@ async def chat(
     except Exception as exc:
         # Toute autre panne du moteur (typiquement Ollama non lancé) : on
         # renvoie un 503 avec un message actionnable pour l'utilisateur, et on
-        # trace le détail côté serveur. On distingue ainsi « ma config est
-        # incomplète » d'une vraie erreur 500 interne.
+        # trace le détail côté serveur. On distingue ainsi " ma config est
+        # incomplète " d'une vraie erreur 500 interne.
         logger.error("Erreur RAG : %s", exc, exc_info=True)
         raise HTTPException(
             status_code=503,
@@ -374,15 +374,15 @@ if DOSSIER_FRONTEND.exists():
     # 2) Catch-all : toute requête GET qui n'a pas été captée par une route
     #    API ci-dessus renvoie index.html (l'app React prend alors le relais).
     #    Comme cette route est déclarée en DERNIER, FastAPI teste d'abord
-    #    /health, /chat, /docs, /auth/*, etc. — elle ne les masque pas.
-    #    C'est le motif classique d'une « single-page application » : le
+    #    /health, /chat, /docs, /auth/*, etc. , elle ne les masque pas.
+    #    C'est le motif classique d'une " single-page application " : le
     #    routage côté client (React Router) a besoin que toute URL inconnue du
     #    serveur retombe sur index.html, sinon un rafraîchissement sur une
     #    route React donnerait un 404.
     @app.get("/{chemin_complet:path}", include_in_schema=False)
     async def servir_frontend(chemin_complet: str):
         # Si le client demande un fichier réel présent dans dist/ (favicon,
-        # icons, manifest…), on le sert tel quel ; sinon on renvoie index.html.
+        # icons, manifest...), on le sert tel quel ; sinon on renvoie index.html.
         # On teste is_file pour distinguer un vrai fichier d'une route React :
         # un fichier existe sur disque, une route React non, et c'est elle qui
         # doit recevoir index.html.

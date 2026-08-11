@@ -77,7 +77,7 @@ def stats_systeme(
     # appelle ces dépendances et passe leur résultat en argument.
     #   - get_db       : fournit une session de base de données ;
     #   - exiger_admin : vérifie que l'appelant est un administrateur (sinon la
-    #     requête est rejetée AVANT d'entrer ici). Le « _ » indique qu'on ne se
+    #     requête est rejetée AVANT d'entrer ici). Le " _ " indique qu'on ne se
     #     sert pas de sa valeur de retour : seul son effet de contrôle compte.
     db=Depends(get_db),
     _=Depends(exiger_admin),
@@ -85,14 +85,14 @@ def stats_systeme(
     """Retourne les statistiques globales. Réservé aux admins."""
     from src.core.ingest import DOSSIER_PARTAGE, DOSSIER_USERS, EXTENSIONS_AUTORISEES
 
-    # Bornes de temps pour les compteurs « aujourd'hui » et « cette semaine ».
+    # Bornes de temps pour les compteurs " aujourd'hui " et " cette semaine ".
     # On travaille en UTC pour éviter toute ambiguïté de fuseau horaire.
     maintenant = datetime.now(timezone.utc)
     debut_jour = maintenant.replace(hour=0, minute=0, second=0, microsecond=0)
     debut_semaine = maintenant - timedelta(days=7)
 
     # Comptages via l'ORM SQLAlchemy. Chaque .query(...).count() se traduit en
-    # une requête SQL « SELECT COUNT(*) ... » : on récupère un nombre, pas les
+    # une requête SQL " SELECT COUNT(*) ... " : on récupère un nombre, pas les
     # lignes elles-mêmes, ce qui est efficace.
     nb_utilisateurs = db.query(Utilisateur).count()
     nb_actifs = db.query(Utilisateur).filter(Utilisateur.actif == 1).count()
@@ -157,7 +157,7 @@ def stats_utilisateurs(
     resultat = []
     for u in utilisateurs:
         # Pour chaque utilisateur, on compte ses conversations.
-        # Remarque : c'est une requête par utilisateur (motif « N+1 »).
+        # Remarque : c'est une requête par utilisateur (motif " N+1 ").
         # Acceptable ici vu le faible nombre d'utilisateurs ; sur une grande
         # base, on préférerait une seule requête groupée (GROUP BY).
         nb = db.query(Conversation).filter(
@@ -191,7 +191,7 @@ def activite_recente(
         .all()
     )
     # Transformation de chaque enregistrement en modèle de réponse :
-    #   - « utilisateur or "anonyme" » : valeur de repli si le champ est vide ;
+    #   - " utilisateur or "anonyme" " : valeur de repli si le champ est vide ;
     #   - question[:100] : on tronque à 100 caractères pour un aperçu compact ;
     #   - sources_en_liste() : convertit les sources stockées en liste Python.
     return [

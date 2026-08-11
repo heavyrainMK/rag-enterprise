@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # Constantes
 # ---------------------------------------------------------------------------
 # Toute la configuration de l'ingestion est rassemblée ici, en constantes
-# nommées, plutôt que dispersée en « nombres magiques » dans le code. On peut
+# nommées, plutôt que dispersée en " nombres magiques " dans le code. On peut
 # ainsi ajuster un paramètre (taille de morceau, modèle...) en un seul endroit.
 DOSSIER_DATA: Path = Path("data")
 DOSSIER_PARTAGE: Path = DOSSIER_DATA / "shared"
@@ -91,8 +91,8 @@ def nom_collection_utilisateur(nom_utilisateur):
     )
     # On borne la longueur pour rester dans les limites de ChromaDB.
     nom_propre = nom_propre[:40]
-    # Le piège : ce nettoyage est « destructeur », donc deux noms distincts
-    # (« Alice.B » et « aliceb ») pourraient se réduire au même texte et donc
+    # Le piège : ce nettoyage est " destructeur ", donc deux noms distincts
+    # (" Alice.B " et " aliceb ") pourraient se réduire au même texte et donc
     # partager une collection, ce qui casserait l'isolation. On suffixe donc un
     # hachage du nom ORIGINAL : il diffère dès que le nom d'origine diffère,
     # garantissant une collection distincte par utilisateur réel.
@@ -141,7 +141,7 @@ def charger_documents(dossier):
         try:
             chargeur = chargeurs[chemin.suffix.lower()](str(chemin))
             docs = chargeur.load()
-            # On force la métadonnée « source » au nom de fichier : c'est elle
+            # On force la métadonnée " source " au nom de fichier : c'est elle
             # qui, à la fin, permettra de citer la source dans la réponse. On
             # remplace le chemin complet par le simple nom, plus lisible et qui
             # ne divulgue pas l'arborescence du serveur.
@@ -176,7 +176,7 @@ def decouper_documents(documents):
     )
     morceaux = decoupeur.split_documents(documents)
     logger.info(
-        "%d document(s) → %d morceau(x) (taille=%d, chevauchement=%d).",
+        "%d document(s) --> %d morceau(x) (taille=%d, chevauchement=%d).",
         len(documents), len(morceaux), TAILLE_MORCEAU, CHEVAUCHEMENT,
     )
     return morceaux
@@ -193,7 +193,7 @@ _modele_embedding = None
 
 def charger_modele_embedding():
     """Retourne le modèle d'embedding, chargé une seule fois en mémoire."""
-    # Patron « singleton paresseux » : on instancie au premier appel, puis on
+    # Patron " singleton paresseux " : on instancie au premier appel, puis on
     # réutilise. global est nécessaire pour réaffecter la variable de module.
     global _modele_embedding
     if _modele_embedding is None:
@@ -269,7 +269,7 @@ def id_morceau(doc, position, collection=""):
 def ingerer(dossier, collection, etiquette):
     """
     Pipeline d'ingestion d'un dossier vers une collection ChromaDB :
-    chargement → découpage → embeddings → enregistrement.
+    chargement --> découpage --> embeddings --> enregistrement.
 
     Paramètres
     ----------
@@ -289,7 +289,7 @@ def ingerer(dossier, collection, etiquette):
     # seuls le dossier, la collection cible et l'étiquette de log changent. On
     # évite ainsi de dupliquer les quatre étapes du pipeline.
     dossier.mkdir(parents=True, exist_ok=True)
-    logger.info("=== Ingestion %s → collection '%s' ===", etiquette, collection)
+    logger.info("=== Ingestion %s --> collection '%s' ===", etiquette, collection)
     documents = charger_documents(dossier)
     # Sortie anticipée si rien à ingérer : inutile de charger le modèle ou de
     # toucher à ChromaDB pour un dossier vide.

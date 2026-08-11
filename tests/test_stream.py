@@ -35,7 +35,7 @@ def faux_user(nom="testuser"):
 
 def lire_sse(texte):
     # Petit parseur SSE pour les tests : la réponse de streaming est un flux
-    # texte où chaque événement est une ligne « data: <json> ». On reconstruit
+    # texte où chaque événement est une ligne " data: <json> ". On reconstruit
     # donc la liste des événements en isolant ces lignes et en décodant leur
     # charge JSON. Cela nous permet ensuite de raisonner sur des dictionnaires
     # Python plutôt que sur du texte brut. C'est le pendant, côté test, de la
@@ -60,7 +60,7 @@ class TestFormatEvenement:
 
     def test_ligne_sse_valide(self):
         # On teste directement la fonction de mise en forme _evenement : sa sortie
-        # doit commencer par « data: » et finir par une ligne vide (le double saut
+        # doit commencer par " data: " et finir par une ligne vide (le double saut
         # de ligne). Ce format n'est pas cosmétique : c'est lui qui délimite les
         # événements pour le client SSE. Une ligne mal formée casserait le
         # découpage côté navigateur.
@@ -70,8 +70,8 @@ class TestFormatEvenement:
         assert ligne.endswith("\n\n")
 
     def test_accents_preserves(self):
-        # Les accents doivent traverser la sérialisation intacts (« congés » et
-        # non « cong\u00e9s »). C'est le rôle du ensure_ascii=False dans
+        # Les accents doivent traverser la sérialisation intacts (" congés " et
+        # non " cong\u00e9s "). C'est le rôle du ensure_ascii=False dans
         # _evenement ; ce test le verrouille, car un corpus francophone en dépend.
         from src.api.routes.stream import _evenement
         ligne = _evenement({"type": "token", "content": "congés"})
@@ -87,13 +87,13 @@ class TestChatStream:
 
     def test_tokens_puis_done(self, en_user):
         # Cas nominal de bout en bout. On remplace le moteur repondre_stream par
-        # un faux générateur qui émet deux tokens puis un « done ». On vérifie
+        # un faux générateur qui émet deux tokens puis un " done ". On vérifie
         # alors plusieurs garanties d'un coup :
         #  - la séquence d'événements reçue est bien token, token, done ;
         #  - l'événement final porte les sources ;
         #  - la sauvegarde en historique est appelée UNE fois, avec le bon
-        #    propriétaire, et avec la réponse RECONSTITUÉE (« Bon » + « jour » =
-        #    « Bonjour »). Ce dernier point prouve que la route recolle bien les
+        #    propriétaire, et avec la réponse RECONSTITUÉE (" Bon " + " jour " =
+        #    " Bonjour "). Ce dernier point prouve que la route recolle bien les
         #    tokens pour archiver la réponse complète, alors que le client, lui,
         #    les a reçus séparément.
         def faux_stream(question, nom_utilisateur="anonyme"):
@@ -117,7 +117,7 @@ class TestChatStream:
 
     def test_evenement_sans_contexte(self, en_user):
         # Quand le moteur signale l'absence de contexte, la route doit relayer un
-        # événement no_context au client. C'est la version « vue de la route » du
+        # événement no_context au client. C'est la version " vue de la route " du
         # garde-fou anti-hallucination : l'utilisateur reçoit un message honnête.
         def faux_stream(question, nom_utilisateur="anonyme"):
             yield {"type": "no_context", "content": "Je ne trouve pas."}
